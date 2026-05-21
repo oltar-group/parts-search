@@ -133,7 +133,7 @@ function renderResultCard(result) {
   const rows = [
     ["Brand", result.displayBrand || result.brand],
     ["Article", result.article],
-    ["Quantity", valueOrDash(result.quantity)],
+    ["Total stock", valueOrDash(result.quantity)],
     ["Multiplicity", valueOrDash(result.multiplicity)],
     ["Category", result.category],
     ["Provider ID", result.externalId]
@@ -147,6 +147,11 @@ function renderResultCard(result) {
     dd.textContent = value || "-";
     wrapper.append(dt, dd);
     details.append(wrapper);
+  }
+
+  const stockBlock = renderRemains(result.remains);
+  if (stockBlock) {
+    node.querySelector(".result-body").append(stockBlock);
   }
 
   actions.className = "result-actions";
@@ -186,6 +191,71 @@ function formatPrice(price) {
 
 function valueOrDash(value) {
   return value === undefined || value === null || value === "" ? "-" : String(value);
+}
+
+function renderRemains(remains) {
+  const rows = normalizeRemains(remains);
+  if (!rows.length) {
+    return null;
+  }
+
+  const section = document.createElement("section");
+  section.className = "stock-section";
+
+  const title = document.createElement("h3");
+  title.textContent = "Stock by warehouse";
+  section.append(title);
+
+  const list = document.createElement("ul");
+  list.className = "stock-list";
+
+  for (const row of rows) {
+    const item = document.createElement("li");
+    const storage = document.createElement("span");
+    const remain = document.createElement("strong");
+    storage.textContent = row.storage || "Warehouse";
+    remain.textContent = valueOrDash(row.remain);
+    item.append(storage, remain);
+    list.append(item);
+  }
+
+  section.append(list);
+  return section;
+}
+
+function normalizeRemains(remains) {
+  if (!remains) {
+    return [];
+  }
+
+  if (Array.isArray(remains)) {
+    return remains
+      .map((entry) => ({
+        storage:
+          entry?.storage?.name ||
+          entry?.warehouse?.name ||
+          entry?.store?.name ||
+          entry?.storageName ||
+          entry?.name ||
+          "",
+        remain:
+          entry?.remain ??
+          entry?.quantity ??
+          entry?.qty ??
+          entry?.available ??
+          ""
+      }))
+      .filter((entry) => entry.storage || entry.remain !== "");
+  }
+
+  if (typeof remains === "object") {
+    return Object.entries(remains).map(([storage, remain]) => ({
+      storage,
+      remain
+    }));
+  }
+
+  return [{ storage: "Supplier", remain: remains }];
 }
 
 function formatProviders(providers) {
