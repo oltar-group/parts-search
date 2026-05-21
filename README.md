@@ -48,6 +48,12 @@ npm test
 npm run check
 ```
 
+## Search Logging
+
+Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server console. Use `SEARCH_LOG_LEVEL=raw` to also print the redacted raw UniqTrade response.
+
+Useful when a result appears in API search but cannot be bought in the provider shop: check `quantity`, `remains`, price, provider URL, and any raw availability fields.
+
 ## API
 
 ```http

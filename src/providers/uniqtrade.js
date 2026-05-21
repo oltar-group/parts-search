@@ -23,6 +23,7 @@ export class UniqTradeProvider {
     this.browserFingerprint =
       options.browserFingerprint || "parts-search-prototype";
     this.timeoutMs = options.timeoutMs || 12000;
+    this.logLevel = options.logLevel || "off";
     this.fetchImpl = options.fetchImpl || globalThis.fetch;
     this.token = null;
     this.refreshToken = null;
@@ -51,12 +52,16 @@ export class UniqTradeProvider {
     const path = `/api/search/${encodeURIComponent(normalizedArticle)}?${params}`;
     const response = await this.authenticatedRequest(path);
     const payload = await safeJson(response);
-    return normalizeUniqTradeSearch(payload, {
+    this.logRawSearch({ article: normalizedArticle, brand, path, payload });
+
+    const results = normalizeUniqTradeSearch(payload, {
       providerId: this.id,
       providerName: this.name,
       webBaseUrl: this.webBaseUrl,
       apiBaseUrl: this.baseUrl
     });
+    this.logSearchSummary({ article: normalizedArticle, brand, results });
+    return results;
   }
 
   async authenticatedRequest(path) {
@@ -175,6 +180,59 @@ export class UniqTradeProvider {
       providerId: this.id,
       status: response.status
     });
+  }
+
+  logRawSearch({ article, brand, path, payload }) {
+    if (this.logLevel !== "raw") {
+      return;
+    }
+
+    console.info(
+      JSON.stringify(
+        {
+          event: "supplier.raw_response",
+          providerId: this.id,
+          article,
+          brand: brand || "",
+          path,
+          payload: redactSensitive(payload)
+        },
+        null,
+        2
+      )
+    );
+  }
+
+  logSearchSummary({ article, brand, results }) {
+    if (this.logLevel !== "summary" && this.logLevel !== "raw") {
+      return;
+    }
+
+    console.info(
+      JSON.stringify(
+        {
+          event: "supplier.search_summary",
+          providerId: this.id,
+          article,
+          brand: brand || "",
+          resultCount: results.length,
+          results: results.map((result) => ({
+            id: result.externalId,
+            article: result.article,
+            brand: result.displayBrand || result.brand,
+            title: result.title,
+            quantity: result.quantity,
+            remains: summarizeRemains(result.remains),
+            price: result.price,
+            multiplicity: result.multiplicity,
+            providerUrl: result.providerUrl,
+            apiDetailUrl: result.apiDetailUrl
+          }))
+        },
+        null,
+        2
+      )
+    );
   }
 }
 
@@ -337,6 +395,27 @@ function pickNumber(item, keys) {
     }
   }
   return null;
+}
+
+function summarizeRemains(remains) {
+  if (!Array.isArray(remains)) {
+    return remains ?? null;
+  }
+
+  return remains.map((entry) => ({
+    storage:
+      entry?.storage?.name ||
+      entry?.warehouse?.name ||
+      entry?.store?.name ||
+      entry?.storageName ||
+      null,
+    remain:
+      entry?.remain ??
+      entry?.quantity ??
+      entry?.qty ??
+      entry?.available ??
+      null
+  }));
 }
 
 function trimTrailingSlash(value) {

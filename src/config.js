@@ -38,6 +38,7 @@ export function readConfig(env = process.env) {
     host: env.HOST || "127.0.0.1",
     port: parseInt(env.PORT || "3000", 10),
     includeSupplierImages: env.INCLUDE_SUPPLIER_IMAGES !== "false",
+    searchLogLevel: env.SEARCH_LOG_LEVEL || "off",
     uniqtrade: {
       baseUrl: env.UNIQTRADE_API_BASE_URL || "https://order24-api.utr.ua",
       webBaseUrl: env.UNIQTRADE_WEB_BASE_URL || "https://order24.utr.ua",
@@ -45,7 +46,8 @@ export function readConfig(env = process.env) {
       password: env.UNIQTRADE_PASSWORD || "",
       browserFingerprint:
         env.UNIQTRADE_BROWSER_FINGERPRINT || "parts-search-prototype",
-      timeoutMs: parseInt(env.UNIQTRADE_TIMEOUT_MS || "12000", 10)
+      timeoutMs: parseInt(env.UNIQTRADE_TIMEOUT_MS || "12000", 10),
+      logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };
 }

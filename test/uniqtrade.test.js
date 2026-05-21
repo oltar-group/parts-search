@@ -164,6 +164,53 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
   assert.match(calls[3].url, /info=1/);
 });
 
+test("UniqTrade provider logs raw response and summary when enabled", async () => {
+  const messages = [];
+  const originalInfo = console.info;
+  console.info = (message) => messages.push(JSON.parse(message));
+
+  const provider = new UniqTradeProvider({
+    baseUrl: "https://order24-api.utr.ua",
+    email: "user@example.com",
+    password: "secret",
+    browserFingerprint: "test",
+    logLevel: "raw",
+    fetchImpl: async (url) => {
+      if (url.endsWith("/api/login_check")) {
+        return jsonResponse(200, {
+          token: "old-token",
+          refresh_token: "refresh-token"
+        });
+      }
+
+      return jsonResponse(200, {
+        details: [
+          {
+            id: 99,
+            article: "OC90",
+            brand: "MAHLE",
+            quantity: 0,
+            token: "supplier-token"
+          }
+        ]
+      });
+    }
+  });
+
+  try {
+    await provider.search({ article: "OC90" });
+  } finally {
+    console.info = originalInfo;
+  }
+
+  assert.deepEqual(
+    messages.map((message) => message.event),
+    ["supplier.raw_response", "supplier.search_summary"]
+  );
+  assert.equal(JSON.stringify(messages).includes("supplier-token"), false);
+  assert.equal(messages[1].results[0].quantity, 0);
+});
+
 test("redacts sensitive fields from raw provider data", () => {
   assert.deepEqual(
     redactSensitive({

@@ -70,6 +70,35 @@ test("search service returns partial results when one provider fails", async () 
   assert.equal(result.body.meta.partial, true);
 });
 
+test("search service logs summary when enabled", async () => {
+  const messages = [];
+  const originalInfo = console.info;
+  console.info = (message) => messages.push(JSON.parse(message));
+
+  try {
+    await searchParts({
+      query: { q: "OC90" },
+      logLevel: "summary",
+      providers: [
+        provider("ok", "OK Provider", [
+          {
+            providerId: "ok",
+            article: "OC90",
+            raw: { token: "secret-token" }
+          }
+        ])
+      ]
+    });
+  } finally {
+    console.info = originalInfo;
+  }
+
+  assert.equal(messages.length, 1);
+  assert.equal(messages[0].event, "parts.search_response");
+  assert.equal(messages[0].resultCount, 1);
+  assert.equal(JSON.stringify(messages).includes("secret-token"), false);
+});
+
 test("HTTP API serves successful search and does not expose secrets", async () => {
   const handler = createRequestHandler({
     config: { includeSupplierImages: true },

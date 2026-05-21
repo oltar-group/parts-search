@@ -50,7 +50,8 @@ export function createRequestHandler({ config, providers }) {
         const result = await searchParts({
           query: Object.fromEntries(url.searchParams),
           providers: providerList,
-          includeImages: appConfig.includeSupplierImages
+          includeImages: appConfig.includeSupplierImages,
+          logLevel: appConfig.searchLogLevel
         });
         sendJson(res, result.status, result.body);
         return;

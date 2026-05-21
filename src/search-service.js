@@ -33,7 +33,8 @@ export function validateSearchInput(query) {
 export async function searchParts({
   query,
   providers,
-  includeImages = true
+  includeImages = true,
+  logLevel = "off"
 }) {
   const validation = validateSearchInput(query);
   if (!validation.ok) {
@@ -91,17 +92,36 @@ export async function searchParts({
     }
   }
 
+  const body = {
+    query: { article: validation.article, brand: validation.brand },
+    results,
+    errors,
+    providers: providerStates,
+    meta: {
+      durationMs: Date.now() - startedAt,
+      partial: results.length > 0 && errors.length > 0
+    }
+  };
+
+  if (logLevel === "summary" || logLevel === "raw") {
+    console.info(
+      JSON.stringify(
+        {
+          event: "parts.search_response",
+          query: body.query,
+          resultCount: body.results.length,
+          errors: body.errors,
+          providers: body.providers,
+          durationMs: body.meta.durationMs
+        },
+        null,
+        2
+      )
+    );
+  }
+
   return {
     status: 200,
-    body: {
-      query: { article: validation.article, brand: validation.brand },
-      results,
-      errors,
-      providers: providerStates,
-      meta: {
-        durationMs: Date.now() - startedAt,
-        partial: results.length > 0 && errors.length > 0
-      }
-    }
+    body
   };
 }
