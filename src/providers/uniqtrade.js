@@ -115,7 +115,10 @@ export class UniqTradeProvider {
     const response = await this.request("/api/token/refresh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: this.refreshToken })
+      body: JSON.stringify({
+        refresh_token: this.refreshToken,
+        browser_fingerprint: this.browserFingerprint
+      })
     });
 
     if (!response.ok) {
@@ -212,7 +215,7 @@ function extractRows(payload) {
     return payload;
   }
 
-  for (const key of ["data", "items", "results", "products", "rows"]) {
+  for (const key of ["details", "data", "items", "results", "products", "rows"]) {
     if (Array.isArray(payload?.[key])) {
       return payload[key];
     }
@@ -250,11 +253,16 @@ function normalizeImages(images) {
 }
 
 function normalizePrice(item) {
-  const price = item?.price;
+  const price = item?.yourPrice || item?.price;
   if (price && typeof price === "object") {
     return {
       value: Number(price.value ?? price.amount ?? price.price) || null,
-      currency: price.currency || item?.currency || null
+      currency:
+        price.currency?.code ||
+        price.currency ||
+        item?.currency?.code ||
+        item?.currency ||
+        null
     };
   }
 
@@ -272,6 +280,18 @@ function normalizePrice(item) {
 function pickString(item, keys) {
   for (const key of keys) {
     const value = item?.[key];
+    if (value && typeof value === "object") {
+      const nested =
+        value.name ||
+        value.displayName ||
+        value.originalName ||
+        value.code ||
+        value.externalCode;
+      if (nested !== undefined && nested !== null && String(nested).trim()) {
+        return String(nested).trim();
+      }
+      continue;
+    }
     if (value !== undefined && value !== null && String(value).trim()) {
       return String(value).trim();
     }

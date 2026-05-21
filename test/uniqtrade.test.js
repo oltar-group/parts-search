@@ -37,6 +37,53 @@ test("normalizes UniqTrade rows with supplier images", () => {
   assert.equal(results[0].images[0].thumbnail, "https://cdn.example/thumb.jpg");
 });
 
+test("normalizes documented UniqTrade details payload", () => {
+  const results = normalizeUniqTradeSearch({
+    details: [
+      {
+        multiplicity: 1,
+        id: 45623,
+        brand: {
+          name: "WIX FILTERS",
+          externalCode: "00116"
+        },
+        displayBrand: "WIX FILTERS",
+        article: "WL7129-12",
+        title: "Oil filter",
+        quantity: 1,
+        yourPrice: {
+          amount: 88.03,
+          currency: { code: "UAH" }
+        },
+        remains: [
+          {
+            storage: { id: 15, name: "Kyiv" },
+            remain: "> 10"
+          }
+        ],
+        category: {
+          name: "Oil filter"
+        },
+        images: [
+          {
+            imagePath: "/images/base/brand/mahle_original/OC90/OC90-pic01.jpg",
+            fullImagePath:
+              "https://order24-api.utr.ua/images/base/brand/mahle_original/OC90/OC90-pic01.jpg",
+            thumbnail:
+              "https://order24-api.utr.ua/media/cache/thumbnail/images/base/brand/mahle_original/OC90/OC90-pic01.jpg"
+          }
+        ]
+      }
+    ]
+  });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].brand, "WIX FILTERS");
+  assert.equal(results[0].category, "Oil filter");
+  assert.deepEqual(results[0].price, { value: 88.03, currency: "UAH" });
+  assert.equal(results[0].images[0].fullImagePath.includes("order24-api.utr.ua"), true);
+});
+
 test("normalizes UniqTrade rows without images", () => {
   const results = normalizeUniqTradeSearch([
     {
@@ -102,6 +149,10 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
   assert.equal(calls.length, 4);
   assert.equal(calls[1].options.headers.Authorization, "Bearer old-token");
   assert.equal(calls[3].options.headers.Authorization, "Bearer new-token");
+  assert.equal(
+    JSON.parse(calls[2].options.body).browser_fingerprint,
+    "test"
+  );
   assert.match(calls[3].url, /brand=MAHLE/);
   assert.match(calls[3].url, /info=1/);
 });

@@ -44,7 +44,8 @@ form.addEventListener("submit", async (event) => {
     if (count === 0 && payload.errors?.length) {
       setStatus("No results because all providers failed.", "error");
     } else if (count === 0) {
-      setStatus("No matching parts found.");
+      const providerText = formatProviders(payload.providers || []);
+      setStatus(`No matching parts found.${providerText ? ` ${providerText}` : ""}`);
     } else if (payload.meta?.partial) {
       setStatus(`${count} result${count === 1 ? "" : "s"} found. Some providers failed.`);
     } else {
@@ -160,3 +161,12 @@ function valueOrDash(value) {
   return value === undefined || value === null || value === "" ? "-" : String(value);
 }
 
+function formatProviders(providers) {
+  if (!providers.length) {
+    return "";
+  }
+
+  return providers
+    .map((provider) => `${provider.name || provider.id}: ${provider.count || 0}`)
+    .join(", ");
+}
