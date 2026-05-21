@@ -196,7 +196,7 @@ function valueOrDash(value) {
 function renderRemains(remains) {
   const rows = normalizeRemains(remains);
   if (!rows.length) {
-    return null;
+    return renderEmptyRemains(remains);
   }
 
   const section = document.createElement("section");
@@ -220,6 +220,23 @@ function renderRemains(remains) {
   }
 
   section.append(list);
+  return section;
+}
+
+function renderEmptyRemains(remains) {
+  const section = document.createElement("section");
+  section.className = "stock-section";
+
+  const title = document.createElement("h3");
+  title.textContent = "Remains";
+
+  const message = document.createElement("p");
+  message.className = "stock-empty";
+  message.textContent = Array.isArray(remains)
+    ? "No stock remains reported"
+    : "Not provided";
+
+  section.append(title, message);
   return section;
 }
 
