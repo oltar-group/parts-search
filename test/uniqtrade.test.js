@@ -119,6 +119,20 @@ test("normalizes alternative remains field names", () => {
   ]);
 });
 
+test("keeps empty remains empty", () => {
+  const results = normalizeUniqTradeSearch([
+    {
+      article: "WL7129-12",
+      brand: "WIX FILTERS",
+      quantity: 1,
+      remains: []
+    }
+  ]);
+
+  assert.deepEqual(results[0].remains, []);
+  assert.equal(results[0].quantity, 1);
+});
+
 test("normalizes UniqTrade rows without images", () => {
   const results = normalizeUniqTradeSearch([
     {

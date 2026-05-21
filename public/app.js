@@ -149,7 +149,7 @@ function renderResultCard(result) {
     details.append(wrapper);
   }
 
-  const stockBlock = renderRemains(result.remains, result.quantity);
+  const stockBlock = renderRemains(result.remains);
   if (stockBlock) {
     node.querySelector(".result-body").append(stockBlock);
   }
@@ -193,12 +193,8 @@ function valueOrDash(value) {
   return value === undefined || value === null || value === "" ? "-" : String(value);
 }
 
-function renderRemains(remains, quantity) {
+function renderRemains(remains) {
   const rows = normalizeRemains(remains);
-  if (!rows.length && quantity !== undefined && quantity !== null && quantity !== "") {
-    rows.push({ storage: "Total", remain: quantity });
-  }
-
   if (!rows.length) {
     return null;
   }
