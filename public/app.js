@@ -107,6 +107,7 @@ function renderResultCard(result) {
   const title = node.querySelector(".title");
   const price = node.querySelector(".price");
   const details = node.querySelector(".details");
+  const actions = document.createElement("div");
 
   provider.textContent = result.providerName || result.providerId || "Supplier";
   title.textContent = result.title || [result.brand, result.article].filter(Boolean).join(" ");
@@ -146,6 +147,26 @@ function renderResultCard(result) {
     dd.textContent = value || "-";
     wrapper.append(dt, dd);
     details.append(wrapper);
+  }
+
+  actions.className = "result-actions";
+  if (result.providerUrl) {
+    const providerLink = document.createElement("a");
+    providerLink.className = "provider-link";
+    providerLink.href = result.providerUrl;
+    providerLink.target = "_blank";
+    providerLink.rel = "noopener noreferrer";
+    providerLink.textContent = "Open in provider";
+    actions.append(providerLink);
+  }
+  if (result.apiDetailUrl) {
+    const detail = document.createElement("span");
+    detail.className = "detail-hint";
+    detail.textContent = `API detail: ${result.externalId}`;
+    actions.append(detail);
+  }
+  if (actions.childElementCount > 0) {
+    node.querySelector(".result-body").append(actions);
   }
 
   return node;

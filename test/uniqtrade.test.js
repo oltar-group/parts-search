@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildUniqTradeSearchUrl,
   UniqTradeProvider,
   normalizeUniqTradeSearch
 } from "../src/providers/uniqtrade.js";
@@ -82,6 +83,12 @@ test("normalizes documented UniqTrade details payload", () => {
   assert.equal(results[0].category, "Oil filter");
   assert.deepEqual(results[0].price, { value: 88.03, currency: "UAH" });
   assert.equal(results[0].images[0].fullImagePath.includes("order24-api.utr.ua"), true);
+  assert.equal(results[0].providerUrl.includes("order24.utr.ua"), true);
+  assert.equal(results[0].providerUrl.includes("WL7129-12"), true);
+  assert.equal(
+    results[0].apiDetailUrl,
+    "https://order24-api.utr.ua/api/detail/45623"
+  );
 });
 
 test("normalizes UniqTrade rows without images", () => {
@@ -167,6 +174,16 @@ test("redacts sensitive fields from raw provider data", () => {
       token: "[redacted]",
       nested: { password: "[redacted]", value: "visible" }
     }
+  );
+});
+
+test("builds provider search URL from article and brand", () => {
+  assert.equal(
+    buildUniqTradeSearchUrl("https://order24.utr.ua", {
+      article: "OC90",
+      brand: "MAHLE"
+    }),
+    "https://order24.utr.ua/?search=OC90+MAHLE"
   );
 });
 

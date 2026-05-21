@@ -29,6 +29,7 @@ Fill in:
 - `UNIQTRADE_EMAIL`
 - `UNIQTRADE_PASSWORD`
 - `UNIQTRADE_BROWSER_FINGERPRINT`
+- `UNIQTRADE_WEB_BASE_URL` if the provider shop URL differs from `https://order24.utr.ua`
 
 Then run:
 

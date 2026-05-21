@@ -3,7 +3,9 @@ import { redactSensitive } from "../redact.js";
 
 const DEFAULT_PROVIDER = {
   id: "uniqtrade",
-  name: "UniqTrade"
+  name: "UniqTrade",
+  webBaseUrl: "https://order24.utr.ua",
+  apiBaseUrl: "https://order24-api.utr.ua"
 };
 
 export class UniqTradeProvider {
@@ -11,7 +13,10 @@ export class UniqTradeProvider {
     this.id = DEFAULT_PROVIDER.id;
     this.name = DEFAULT_PROVIDER.name;
     this.baseUrl = trimTrailingSlash(
-      options.baseUrl || "https://order24-api.utr.ua"
+      options.baseUrl || DEFAULT_PROVIDER.apiBaseUrl
+    );
+    this.webBaseUrl = trimTrailingSlash(
+      options.webBaseUrl || DEFAULT_PROVIDER.webBaseUrl
     );
     this.email = options.email || "";
     this.password = options.password || "";
@@ -48,7 +53,9 @@ export class UniqTradeProvider {
     const payload = await safeJson(response);
     return normalizeUniqTradeSearch(payload, {
       providerId: this.id,
-      providerName: this.name
+      providerName: this.name,
+      webBaseUrl: this.webBaseUrl,
+      apiBaseUrl: this.baseUrl
     });
   }
 
@@ -187,13 +194,21 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
   ]);
   const article = pickString(item, ["article", "oem", "number", "code", "sku"]);
   const title = pickString(item, ["title", "name", "description", "productName"]);
+  const externalId = String(
+    item?.id || item?.externalId || item?.productId || `${article || "part"}-${index}`
+  );
+  const rawUrl = pickString(item, ["url", "rawUrl", "productUrl", "detailUrl"]);
+  const providerUrl =
+    rawUrl || buildUniqTradeSearchUrl(provider.webBaseUrl, { article, brand });
+  const apiDetailUrl =
+    item?.id
+      ? `${trimTrailingSlash(provider.apiBaseUrl || DEFAULT_PROVIDER.apiBaseUrl)}/api/detail/${encodeURIComponent(item.id)}`
+      : "";
 
   return {
     providerId: provider.providerId || provider.id || DEFAULT_PROVIDER.id,
     providerName: provider.providerName || provider.name || DEFAULT_PROVIDER.name,
-    externalId: String(
-      item?.id || item?.externalId || item?.productId || `${article || "part"}-${index}`
-    ),
+    externalId,
     brand,
     displayBrand: pickString(item, ["displayBrand", "brandName"]) || brand,
     article,
@@ -205,9 +220,21 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
     images,
     hasImage: images.length > 0,
     multiplicity: pickNumber(item, ["multiplicity", "minimumOrderQuantity", "pack"]),
-    rawUrl: pickString(item, ["url", "rawUrl", "productUrl"]),
+    rawUrl,
+    providerUrl,
+    apiDetailUrl,
     raw: redactSensitive(item)
   };
+}
+
+export function buildUniqTradeSearchUrl(baseUrl, { article, brand }) {
+  const search = [article, brand].filter(Boolean).join(" ");
+  const params = new URLSearchParams();
+  if (search) {
+    params.set("search", search);
+  }
+
+  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/?${params}`;
 }
 
 function extractRows(payload) {

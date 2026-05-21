@@ -40,6 +40,7 @@ export function readConfig(env = process.env) {
     includeSupplierImages: env.INCLUDE_SUPPLIER_IMAGES !== "false",
     uniqtrade: {
       baseUrl: env.UNIQTRADE_API_BASE_URL || "https://order24-api.utr.ua",
+      webBaseUrl: env.UNIQTRADE_WEB_BASE_URL || "https://order24.utr.ua",
       email: env.UNIQTRADE_EMAIL || "",
       password: env.UNIQTRADE_PASSWORD || "",
       browserFingerprint:
