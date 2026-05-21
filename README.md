@@ -50,12 +50,18 @@ npm run check
 
 ## Specification
 
-The OpenSpec change is copied into this repository so the prototype can move to GitHub as a self-contained project:
+The OpenSpec change is included in this repository so the prototype can move to GitHub as a self-contained project:
 
-- [Proposal](docs/openspec/prototype-parts-search/proposal.md)
-- [Design](docs/openspec/prototype-parts-search/design.md)
-- [Parts search spec](docs/openspec/prototype-parts-search/specs/parts-search/spec.md)
-- [Implementation tasks](docs/openspec/prototype-parts-search/tasks.md)
+- [Proposal](openspec/changes/prototype-parts-search/proposal.md)
+- [Design](openspec/changes/prototype-parts-search/design.md)
+- [Parts search spec](openspec/changes/prototype-parts-search/specs/parts-search/spec.md)
+- [Implementation tasks](openspec/changes/prototype-parts-search/tasks.md)
+
+OpenSpec CLI can validate the change from the repository root:
+
+```bash
+openspec validate prototype-parts-search
+```
 
 ## Search Logging
 
