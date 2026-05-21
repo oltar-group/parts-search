@@ -15,6 +15,10 @@ The system SHALL provide a user-facing search form that accepts a spare part art
 - **WHEN** the user submits the search form without an article query
 - **THEN** the system prevents the supplier request and displays a validation message
 
+#### Scenario: User submits brand-only query
+- **WHEN** the user submits a query that looks like a brand name without an article number and without a brand filter
+- **THEN** the system rejects the request before calling providers and asks for a more exact article number
+
 ### Requirement: Supplier credentials stay server-side
 The system SHALL keep supplier API credentials, JWT tokens, and refresh tokens on the server and SHALL NOT expose them to browser code.
 
@@ -46,11 +50,15 @@ The system SHALL return supplier results in a normalized response model that is 
 
 #### Scenario: UniqTrade returns offers
 - **WHEN** UniqTrade returns matching parts
-- **THEN** the backend returns results containing provider identity, brand, article, title, price, quantity or remains, and image metadata where available
+- **THEN** the backend returns results containing provider identity, brand, article, title, price, quantity, remains, image metadata, provider link, and API detail URL where available
 
 #### Scenario: Future provider is added
 - **WHEN** another supplier provider is configured later
 - **THEN** its results can be merged into the same normalized response without changing the browser search contract
+
+#### Scenario: Provider returns empty remains
+- **WHEN** a provider returns an explicit empty remains list
+- **THEN** the backend preserves the empty remains list and does not infer stock from quantity
 
 ### Requirement: Result UI displays part details and images
 The system SHALL display search results with enough detail for a user to compare spare parts, including image handling.
@@ -67,6 +75,18 @@ The system SHALL display search results with enough detail for a user to compare
 - **WHEN** more than one provider returns results for the same search
 - **THEN** the UI identifies the source provider for each result
 
+#### Scenario: Result has provider action link
+- **WHEN** a result includes a direct provider URL or enough data to build a provider search URL
+- **THEN** the UI displays an action that opens the result or corresponding provider search page
+
+#### Scenario: Result has remains
+- **WHEN** a result includes warehouse remains
+- **THEN** the UI displays the remains separately from quantity
+
+#### Scenario: Result has no remains
+- **WHEN** a result includes an explicit empty remains list
+- **THEN** the UI displays a clear no-stock-remains state instead of using quantity as a substitute
+
 ### Requirement: Search failure states are explicit
 The system SHALL show clear states for no results, provider errors, authentication failures, and partial multi-provider failures.
 
@@ -78,9 +98,28 @@ The system SHALL show clear states for no results, provider errors, authenticati
 - **WHEN** a provider request times out or fails
 - **THEN** the backend returns provider error metadata and the UI shows that the provider failed
 
+#### Scenario: Provider timeout
+- **WHEN** a provider request exceeds the configured timeout
+- **THEN** the backend returns timeout metadata and the UI suggests trying a more exact article number
+
 #### Scenario: One provider fails and another succeeds
 - **WHEN** at least one provider returns results and another provider fails
 - **THEN** the UI displays the successful results and indicates the failed provider separately
+
+### Requirement: Search diagnostics are available
+The system SHALL provide optional server-side search logging for debugging supplier responses and availability mismatches.
+
+#### Scenario: Summary logging is enabled
+- **WHEN** `SEARCH_LOG_LEVEL=summary`
+- **THEN** the server logs query, provider state, result count, quantity, remains summary, price, provider URL, and API detail URL
+
+#### Scenario: Raw logging is enabled
+- **WHEN** `SEARCH_LOG_LEVEL=raw`
+- **THEN** the server logs the redacted raw supplier response in addition to the summary
+
+#### Scenario: Sensitive fields are logged
+- **WHEN** logged data includes token, password, secret, or credential fields
+- **THEN** the system redacts those fields before writing logs
 
 ### Requirement: Alternative access channels reuse search backend
 The system SHALL make the same backend search operation reusable by non-web channels.

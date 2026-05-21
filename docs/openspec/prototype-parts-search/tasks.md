@@ -37,6 +37,9 @@
 - [x] 5.2 Add backend tests for empty query validation, successful search, provider error, and token refresh retry.
 - [x] 5.3 Add a mocked provider test that proves a second provider can be merged without changing the browser response contract.
 - [x] 5.4 Run lint/type checks and the test suite.
+- [x] 5.6 Add diagnostics for supplier raw/summary logging and redaction.
+- [x] 5.7 Add validation and UI messaging for broad brand-only searches and provider timeouts.
+- [x] 5.8 Verify that empty remains are not inferred from quantity and are shown as no stock remains.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options

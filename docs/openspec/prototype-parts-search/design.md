@@ -43,6 +43,8 @@ Each supplier integration SHALL implement a small contract:
 
 The normalized result model should include `providerId`, `providerName`, `externalId`, `brand`, `displayBrand`, `article`, `title`, `category`, `price`, `quantity`, `remains`, `images`, `hasImage`, `multiplicity`, `rawUrl`, and `raw`.
 
+The prototype also carries `providerUrl` for user action links and `apiDetailUrl` for provider API diagnostics or future detail/cart workflows. `quantity` and `remains` must remain separate because UniqTrade can return a quantity-like value even when provider shop stock remains are empty.
+
 Rationale: the UI and alternate channels can use one stable response while supplier-specific fields remain available in `raw` during the prototype. The alternative was to return UniqTrade JSON directly, but that would make the first API shape leak into every future integration.
 
 ### UniqTrade search strategy
@@ -64,6 +66,24 @@ For the prototype, images can be loaded directly from the supplier file URL if t
 
 Rationale: supplier-provided images are the most accurate source for spare parts. External image search or generated images are unsuitable for identifying specific parts because they can mislead users.
 
+### Availability and action handling
+
+The UI SHALL show `quantity` as a separate value and `remains` as its own availability section. If `remains` is an explicit empty list, the UI SHALL show a no-stock-remains state and SHALL NOT infer availability from `quantity`. If the provider result has no direct URL, the UniqTrade adapter SHALL build a fallback provider search link using `/ua/search-results?article={article}`.
+
+Rationale: the API search can return a part even when the provider shop cannot sell it. Treating `quantity` as stock produced misleading UI, so stock must be based on remains or an explicit provider availability field.
+
+### Search input and timeout handling
+
+The backend SHALL reject brand-only article queries, such as `BOSCH` without a brand filter, before calling providers. Provider requests SHALL use a configurable timeout and return timeout metadata to the UI.
+
+Rationale: UniqTrade article search is not a general brand search. Broad terms can time out and give poor feedback, while exact articles produce actionable results.
+
+### Diagnostics logging
+
+The server SHALL support `SEARCH_LOG_LEVEL=off|summary|raw`. Summary logs include query, provider state, result count, quantity, remains summary, price, provider URL, and API detail URL. Raw logs include the supplier response after redacting token, password, secret, and credential fields.
+
+Rationale: diagnostics are needed to understand mismatches between API search results and provider shop availability without exposing credentials.
+
 ### Web UI first, shared backend for alternatives
 
 The web UI is the primary prototype because it is easiest to validate with users and supports image-heavy results. The backend search endpoint also supports these alternatives:
@@ -79,6 +99,8 @@ Rationale: these alternatives reuse the same provider adapters and normalized re
 ## Risks / Trade-offs
 
 - Supplier API availability or rate limits -> Add request timeout, provider-level error state, and clear partial-result rendering when only some providers fail.
+- Broad brand-only searches -> Reject before provider calls and ask for an exact article number.
+- Search result exists but cannot be purchased -> Display remains separately, show explicit empty-remains state, and use logs to inspect provider availability fields.
 - Expired or invalid UniqTrade credentials -> Keep credentials in environment variables, expose backend diagnostics, and map authentication failures to an operator-facing error.
 - Images missing or inaccurate -> Prefer supplier images, display placeholders when absent, and avoid synthetic images for exact part identification.
 - Slow multi-provider search later -> Query providers concurrently with per-provider timeouts and return partial results.
