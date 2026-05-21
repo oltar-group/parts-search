@@ -48,6 +48,15 @@ npm test
 npm run check
 ```
 
+## Specification
+
+The OpenSpec change is copied into this repository so the prototype can move to GitHub as a self-contained project:
+
+- [Proposal](docs/openspec/prototype-parts-search/proposal.md)
+- [Design](docs/openspec/prototype-parts-search/design.md)
+- [Parts search spec](docs/openspec/prototype-parts-search/specs/parts-search/spec.md)
+- [Implementation tasks](docs/openspec/prototype-parts-search/tasks.md)
+
 ## Search Logging
 
 Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server console. Use `SEARCH_LOG_LEVEL=raw` to also print the redacted raw UniqTrade response.
