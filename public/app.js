@@ -133,7 +133,7 @@ function renderResultCard(result) {
   const rows = [
     ["Brand", result.displayBrand || result.brand],
     ["Article", result.article],
-    ["Total stock", valueOrDash(result.quantity)],
+    ["Quantity", valueOrDash(result.quantity)],
     ["Multiplicity", valueOrDash(result.multiplicity)],
     ["Category", result.category],
     ["Provider ID", result.externalId]
@@ -203,7 +203,7 @@ function renderRemains(remains) {
   section.className = "stock-section";
 
   const title = document.createElement("h3");
-  title.textContent = "Stock by warehouse";
+  title.textContent = "Remains";
   section.append(title);
 
   const list = document.createElement("ul");
