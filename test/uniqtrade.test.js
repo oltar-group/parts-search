@@ -82,6 +82,12 @@ test("normalizes documented UniqTrade details payload", () => {
   assert.equal(results[0].brand, "WIX FILTERS");
   assert.equal(results[0].category, "Oil filter");
   assert.deepEqual(results[0].price, { value: 88.03, currency: "UAH" });
+  assert.deepEqual(results[0].remains, [
+    {
+      storage: { id: 15, name: "Kyiv" },
+      remain: "> 10"
+    }
+  ]);
   assert.equal(results[0].images[0].fullImagePath.includes("order24-api.utr.ua"), true);
   assert.equal(results[0].providerUrl.includes("order24.utr.ua"), true);
   assert.equal(results[0].providerUrl.includes("WL7129-12"), true);
@@ -89,6 +95,28 @@ test("normalizes documented UniqTrade details payload", () => {
     results[0].apiDetailUrl,
     "https://order24-api.utr.ua/api/detail/45623"
   );
+});
+
+test("normalizes alternative remains field names", () => {
+  const results = normalizeUniqTradeSearch([
+    {
+      article: "OC90",
+      brand: "MAHLE",
+      stockRemains: [
+        {
+          warehouseName: "Lviv",
+          balance: 3
+        }
+      ]
+    }
+  ]);
+
+  assert.deepEqual(results[0].remains, [
+    {
+      warehouseName: "Lviv",
+      balance: 3
+    }
+  ]);
 });
 
 test("normalizes UniqTrade rows without images", () => {

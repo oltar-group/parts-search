@@ -149,7 +149,7 @@ function renderResultCard(result) {
     details.append(wrapper);
   }
 
-  const stockBlock = renderRemains(result.remains);
+  const stockBlock = renderRemains(result.remains, result.quantity);
   if (stockBlock) {
     node.querySelector(".result-body").append(stockBlock);
   }
@@ -193,8 +193,12 @@ function valueOrDash(value) {
   return value === undefined || value === null || value === "" ? "-" : String(value);
 }
 
-function renderRemains(remains) {
+function renderRemains(remains, quantity) {
   const rows = normalizeRemains(remains);
+  if (!rows.length && quantity !== undefined && quantity !== null && quantity !== "") {
+    rows.push({ storage: "Total", remain: quantity });
+  }
+
   if (!rows.length) {
     return null;
   }
@@ -235,14 +239,20 @@ function normalizeRemains(remains) {
           entry?.storage?.name ||
           entry?.warehouse?.name ||
           entry?.store?.name ||
+          entry?.city?.name ||
+          entry?.region?.name ||
           entry?.storageName ||
+          entry?.warehouseName ||
+          entry?.storeName ||
           entry?.name ||
           "",
         remain:
           entry?.remain ??
+          entry?.balance ??
           entry?.quantity ??
           entry?.qty ??
           entry?.available ??
+          entry?.stock ??
           ""
       }))
       .filter((entry) => entry.storage || entry.remain !== "");

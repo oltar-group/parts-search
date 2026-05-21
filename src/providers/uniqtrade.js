@@ -274,7 +274,7 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
     category: pickString(item, ["category", "categoryName", "groupName"]),
     price: normalizePrice(item),
     quantity: pickNumber(item, ["quantity", "qty", "stock", "available"]),
-    remains: item?.remains ?? item?.warehouses ?? item?.stores ?? null,
+    remains: pickRemains(item),
     images,
     hasImage: images.length > 0,
     multiplicity: pickNumber(item, ["multiplicity", "minimumOrderQuantity", "pack"]),
@@ -394,6 +394,28 @@ function pickNumber(item, keys) {
       return Number.isFinite(number) ? number : null;
     }
   }
+  return null;
+}
+
+function pickRemains(item) {
+  for (const key of [
+    "remains",
+    "remain",
+    "warehouses",
+    "warehouse",
+    "stores",
+    "store",
+    "stocks",
+    "stockRemains",
+    "availability",
+    "balances"
+  ]) {
+    const value = item?.[key];
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
+    }
+  }
+
   return null;
 }
 
