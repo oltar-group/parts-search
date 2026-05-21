@@ -25,6 +25,27 @@ test("search service rejects empty article before calling providers", async () =
   assert.equal(called, false);
 });
 
+test("search service rejects brand-only article query before calling providers", async () => {
+  let called = false;
+  const result = await searchParts({
+    query: { q: "BOSCH" },
+    providers: [
+      {
+        id: "mock",
+        name: "Mock",
+        async search() {
+          called = true;
+          return [];
+        }
+      }
+    ]
+  });
+
+  assert.equal(result.status, 400);
+  assert.equal(result.body.errors[0].code, "article_too_broad");
+  assert.equal(called, false);
+});
+
 test("search service merges a second provider without changing response contract", async () => {
   const result = await searchParts({
     query: { q: "OC90", brand: "MAHLE" },

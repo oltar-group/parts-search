@@ -253,6 +253,37 @@ test("UniqTrade provider logs raw response and summary when enabled", async () =
   assert.equal(messages[1].results[0].quantity, 0);
 });
 
+test("UniqTrade provider reports timeout duration", async () => {
+  const provider = new UniqTradeProvider({
+    baseUrl: "https://order24-api.utr.ua",
+    email: "user@example.com",
+    password: "secret",
+    browserFingerprint: "test",
+    timeoutMs: 1,
+    fetchImpl: async (url, options = {}) => {
+      if (url.endsWith("/api/login_check")) {
+        return jsonResponse(200, {
+          token: "old-token",
+          refresh_token: "refresh-token"
+        });
+      }
+
+      await new Promise((resolve, reject) => {
+        options.signal.addEventListener("abort", () => {
+          const error = new Error("aborted");
+          error.name = "AbortError";
+          reject(error);
+        });
+      });
+    }
+  });
+
+  await assert.rejects(
+    () => provider.search({ article: "OC90" }),
+    /timed out after 1ms/
+  );
+});
+
 test("redacts sensitive fields from raw provider data", () => {
   assert.deepEqual(
     redactSensitive({

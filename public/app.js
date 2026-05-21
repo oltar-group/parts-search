@@ -43,6 +43,7 @@ form.addEventListener("submit", async (event) => {
     const payload = await response.json();
     if (!response.ok) {
       const message = payload?.errors?.[0]?.message || "Search failed.";
+      renderProviderErrors(payload.errors || []);
       setStatus(message, "error");
       return;
     }
@@ -88,12 +89,20 @@ function renderProviderErrors(errors) {
   const list = document.createElement("ul");
   for (const error of errors) {
     const item = document.createElement("li");
-    item.textContent = `${error.providerId || "provider"}: ${error.message}`;
+    item.textContent = formatProviderError(error);
     list.append(item);
   }
 
   errorsEl.append(list);
   errorsEl.hidden = false;
+}
+
+function formatProviderError(error) {
+  const provider = error.providerId || "provider";
+  if (error.code === "timeout") {
+    return `${provider}: timed out. Try a more exact article number.`;
+  }
+  return `${provider}: ${error.message}`;
 }
 
 function renderResults(results) {

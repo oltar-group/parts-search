@@ -156,7 +156,11 @@ export class UniqTradeProvider {
       });
     } catch (error) {
       const code = error?.name === "AbortError" ? "timeout" : "network_error";
-      throw new ProviderError(code, "UniqTrade request failed", {
+      const message =
+        code === "timeout"
+          ? `UniqTrade request timed out after ${this.timeoutMs}ms`
+          : "UniqTrade request failed";
+      throw new ProviderError(code, message, {
         providerId: this.id,
         cause: error
       });

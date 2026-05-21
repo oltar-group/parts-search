@@ -27,6 +27,18 @@ export function validateSearchInput(query) {
     };
   }
 
+  if (!/[0-9]/.test(article) && !brand) {
+    return {
+      ok: false,
+      status: 400,
+      error: {
+        code: "article_too_broad",
+        message:
+          "Search by article number, not by brand only. Example: WL7129-12 or OC90."
+      }
+    };
+  }
+
   return { ok: true, article, brand };
 }
 
