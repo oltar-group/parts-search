@@ -52,7 +52,7 @@
 
     <template id="result-template">
       <article class="result-card">
-        <div class="image-wrap"></div>
+        <button class="image-wrap" type="button" aria-label="Open part image"></button>
         <div class="result-body">
           <div class="result-head">
             <div>
@@ -66,7 +66,11 @@
       </article>
     </template>
 
+    <dialog id="image-dialog" class="image-dialog" aria-label="Part image preview">
+      <button class="dialog-close" type="button" aria-label="Close image preview">Close</button>
+      <img id="dialog-image" alt="" />
+    </dialog>
+
     <script src="/app.js" type="module"></script>
   </body>
 </html>
-

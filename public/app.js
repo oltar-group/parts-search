@@ -6,6 +6,16 @@ const statusEl = document.querySelector("#status");
 const errorsEl = document.querySelector("#provider-errors");
 const resultsEl = document.querySelector("#results");
 const template = document.querySelector("#result-template");
+const imageDialog = document.querySelector("#image-dialog");
+const dialogImage = document.querySelector("#dialog-image");
+const dialogClose = document.querySelector(".dialog-close");
+
+dialogClose.addEventListener("click", () => imageDialog.close());
+imageDialog.addEventListener("click", (event) => {
+  if (event.target === imageDialog) {
+    imageDialog.close();
+  }
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -106,20 +116,16 @@ function renderResultCard(result) {
   if (image?.thumbnail || image?.fullImagePath) {
     const img = document.createElement("img");
     img.alt = title.textContent || "Part image";
-    img.src = image.thumbnail || image.fullImagePath;
+    img.src = image.fullImagePath || image.thumbnail;
     img.loading = "lazy";
 
-    if (image.fullImagePath) {
-      const link = document.createElement("a");
-      link.href = image.fullImagePath;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.append(img);
-      imageWrap.append(link);
-    } else {
-      imageWrap.append(img);
-    }
+    imageWrap.append(img);
+    imageWrap.addEventListener("click", () => {
+      openImagePreview(image.fullImagePath || image.thumbnail, img.alt);
+    });
   } else {
+    imageWrap.classList.add("no-image");
+    imageWrap.disabled = true;
     imageWrap.textContent = "No image";
   }
 
@@ -169,4 +175,14 @@ function formatProviders(providers) {
   return providers
     .map((provider) => `${provider.name || provider.id}: ${provider.count || 0}`)
     .join(", ");
+}
+
+function openImagePreview(src, alt) {
+  dialogImage.src = src;
+  dialogImage.alt = alt;
+  if (typeof imageDialog.showModal === "function") {
+    imageDialog.showModal();
+  } else {
+    window.open(src, "_blank", "noopener,noreferrer");
+  }
 }
