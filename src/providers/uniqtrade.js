@@ -228,13 +228,15 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
 }
 
 export function buildUniqTradeSearchUrl(baseUrl, { article, brand }) {
-  const search = [article, brand].filter(Boolean).join(" ");
   const params = new URLSearchParams();
-  if (search) {
-    params.set("search", search);
+  if (article) {
+    params.set("article", article);
+  }
+  if (brand) {
+    params.set("brand", brand);
   }
 
-  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/?${params}`;
+  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/ua/search-results?${params}`;
 }
 
 function extractRows(payload) {

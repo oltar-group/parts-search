@@ -183,7 +183,7 @@ test("builds provider search URL from article and brand", () => {
       article: "OC90",
       brand: "MAHLE"
     }),
-    "https://order24.utr.ua/?search=OC90+MAHLE"
+    "https://order24.utr.ua/ua/search-results?article=OC90&brand=MAHLE"
   );
 });
 
