@@ -30,7 +30,7 @@ form.addEventListener("submit", async (event) => {
 
   setLoading(true);
   setStatus("Searching suppliers...");
-  renderProviderErrors([]);
+  renderProviderMessages([], []);
   resultsEl.replaceChildren();
 
   try {
@@ -43,12 +43,12 @@ form.addEventListener("submit", async (event) => {
     const payload = await response.json();
     if (!response.ok) {
       const message = payload?.errors?.[0]?.message || "Search failed.";
-      renderProviderErrors(payload.errors || []);
+      renderProviderMessages(payload.errors || [], payload.providers || []);
       setStatus(message, "error");
       return;
     }
 
-    renderProviderErrors(payload.errors || []);
+    renderProviderMessages(payload.errors || [], payload.providers || []);
     renderResults(payload.results || []);
 
     const count = payload.results?.length || 0;
@@ -79,17 +79,31 @@ function setStatus(message, tone) {
   statusEl.className = tone === "error" ? "status error" : "status";
 }
 
-function renderProviderErrors(errors) {
+function renderProviderMessages(errors, providers) {
   errorsEl.replaceChildren();
-  if (!errors.length) {
+  const messages = [
+    ...errors.map((error) => ({
+      tone: "error",
+      text: formatProviderError(error)
+    })),
+    ...providers
+      .filter((provider) => provider.ok && provider.count === 0)
+      .map((provider) => ({
+        tone: "empty",
+        text: `${provider.name || provider.id}: no matches for this article`
+      }))
+  ];
+
+  if (!messages.length) {
     errorsEl.hidden = true;
     return;
   }
 
   const list = document.createElement("ul");
-  for (const error of errors) {
+  for (const message of messages) {
     const item = document.createElement("li");
-    item.textContent = formatProviderError(error);
+    item.className = message.tone;
+    item.textContent = message.text;
     list.append(item);
   }
 

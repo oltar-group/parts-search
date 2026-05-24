@@ -48,6 +48,16 @@ export function readConfig(env = process.env) {
         env.UNIQTRADE_BROWSER_FINGERPRINT || "parts-search-prototype",
       timeoutMs: parseInt(env.UNIQTRADE_TIMEOUT_MS || "20000", 10),
       logLevel: env.SEARCH_LOG_LEVEL || "off"
+    },
+    sline: {
+      baseUrl: env.SLINE_API_BASE_URL || "https://s-line.ua/api/v1",
+      webBaseUrl: env.SLINE_WEB_BASE_URL || "https://s-line.ua",
+      apiKey: env.SLINE_API_KEY || "",
+      currency: env.SLINE_CURRENCY || "UAH",
+      storageId: env.SLINE_STORAGE_ID || "",
+      sendBrandFlag: env.SLINE_SEND_BRAND_FLAG === "true",
+      timeoutMs: parseInt(env.SLINE_TIMEOUT_MS || "20000", 10),
+      logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };
 }

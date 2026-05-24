@@ -40,6 +40,7 @@
 - [x] 5.6 Add diagnostics for supplier raw/summary logging and redaction.
 - [x] 5.7 Add validation and UI messaging for broad brand-only searches and provider timeouts.
 - [x] 5.8 Verify that empty remains are not inferred from quantity and are shown as no stock remains.
+- [x] 5.9 Show provider-level no-match status when other providers return results.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options

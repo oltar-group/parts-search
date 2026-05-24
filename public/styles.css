@@ -140,10 +140,18 @@ button.image-wrap:hover {
 .provider-errors {
   margin-bottom: 16px;
   padding: 12px 14px;
-  border: 1px solid #f3c8c2;
+  border: 1px solid #f2d391;
   border-radius: 8px;
+  color: var(--warn);
+  background: #fff9eb;
+}
+
+.provider-errors li.error {
   color: var(--danger);
-  background: #fff6f5;
+}
+
+.provider-errors li.empty {
+  color: var(--warn);
 }
 
 .results {

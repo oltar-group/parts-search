@@ -101,6 +101,7 @@ Rationale: these alternatives reuse the same provider adapters and normalized re
 - Supplier API availability or rate limits -> Add request timeout, provider-level error state, and clear partial-result rendering when only some providers fail.
 - Broad brand-only searches -> Reject before provider calls and ask for an exact article number.
 - Search result exists but cannot be purchased -> Display remains separately, show explicit empty-remains state, and use logs to inspect provider availability fields.
+- Provider-specific no matches hidden by aggregate results -> Display provider status messages for zero-result providers even when another provider returns matches.
 - Expired or invalid UniqTrade credentials -> Keep credentials in environment variables, expose backend diagnostics, and map authentication failures to an operator-facing error.
 - Images missing or inaccurate -> Prefer supplier images, display placeholders when absent, and avoid synthetic images for exact part identification.
 - Slow multi-provider search later -> Query providers concurrently with per-provider timeouts and return partial results.

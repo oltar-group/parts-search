@@ -75,6 +75,10 @@ The system SHALL display search results with enough detail for a user to compare
 - **WHEN** more than one provider returns results for the same search
 - **THEN** the UI identifies the source provider for each result
 
+#### Scenario: Provider returns no matches while another provider has results
+- **WHEN** one provider returns zero matches and another provider returns results
+- **THEN** the UI displays the successful results and indicates which provider had no matches
+
 #### Scenario: Result has provider action link
 - **WHEN** a result includes a direct provider URL or enough data to build a provider search URL
 - **THEN** the UI displays an action that opens the result or corresponding provider search page
