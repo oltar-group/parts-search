@@ -89,6 +89,88 @@ test("uses direct S-LINE provider URL only when response includes one", () => {
   assert.equal(results[0].providerUrl, "https://s-line.ua/cabinet/parts/1");
 });
 
+test("normalizes S-LINE offers as remains, total quantity, and minimum price", () => {
+  const results = normalizeSLineSearch({
+    Parts: [
+      {
+        Id: 186304,
+        Manufacturer: "BOSCH",
+        Number: "0451103079",
+        Name: "ФІЛЬТР ОЛИВИ",
+        Offers: [
+          {
+            StorageId: 522,
+            Region: "Україна",
+            StorageName: "TRLK",
+            Quantity: 12,
+            Price: 114.92,
+            Logistic: {
+              Status: 1,
+              DeliveryType: "Авто",
+              ShippingDate: "2026-05-25T14:00:00",
+              DeliveryAmount: 0,
+              Message: ""
+            }
+          },
+          {
+            StorageId: 145,
+            Region: "Україна",
+            StorageName: "KVOK",
+            Quantity: 16,
+            Price: 130.39,
+            Logistic: {
+              Status: 1,
+              DeliveryType: "Авто",
+              ShippingDate: "2026-05-26T12:00:00",
+              DeliveryAmount: 0,
+              Message: ""
+            }
+          }
+        ]
+      }
+    ],
+    Currency: "UAH"
+  });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].quantity, 28);
+  assert.deepEqual(results[0].price, { value: 114.92, currency: "UAH" });
+  assert.deepEqual(results[0].remains, [
+    {
+      storageId: 522,
+      storageName: "TRLK",
+      region: "Україна",
+      quantity: 12,
+      price: 114.92,
+      purchaseReturns: null,
+      returnsDaysLimit: null,
+      logistic: {
+        Status: 1,
+        DeliveryType: "Авто",
+        ShippingDate: "2026-05-25T14:00:00",
+        DeliveryAmount: 0,
+        Message: ""
+      }
+    },
+    {
+      storageId: 145,
+      storageName: "KVOK",
+      region: "Україна",
+      quantity: 16,
+      price: 130.39,
+      purchaseReturns: null,
+      returnsDaysLimit: null,
+      logistic: {
+        Status: 1,
+        DeliveryType: "Авто",
+        ShippingDate: "2026-05-26T12:00:00",
+        DeliveryAmount: 0,
+        Message: ""
+      }
+    }
+  ]);
+});
+
 test("registers S-LINE provider only when API key is configured", () => {
   const withoutKey = createProviders(
     readConfig({

@@ -197,6 +197,9 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
     "productName",
     "ProductName"
   ]);
+  const offers = Array.isArray(item?.Offers || item?.offers)
+    ? item?.Offers || item?.offers
+    : [];
   const externalId = String(
     item?.id ||
       item?.Id ||
@@ -226,20 +229,9 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
     article,
     title: title || [brand, article].filter(Boolean).join(" "),
     category: pickString(item, ["category", "Category", "group", "Group"]),
-    price: normalizePrice(item),
-    quantity: pickNumber(item, [
-      "quantity",
-      "Quantity",
-      "qty",
-      "Qty",
-      "available",
-      "Available",
-      "stock",
-      "Stock",
-      "balance",
-      "Balance"
-    ]),
-    remains: pickRemains(item),
+    price: normalizePrice(item, offers),
+    quantity: normalizeQuantity(item, offers),
+    remains: offers.length > 0 ? normalizeOffers(offers) : pickRemains(item),
     images: [],
     hasImage: false,
     multiplicity: pickNumber(item, [
@@ -253,6 +245,41 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
+}
+
+function normalizeQuantity(item, offers) {
+  if (offers.length > 0) {
+    return offers.reduce((sum, offer) => {
+      const quantity = pickNumber(offer, ["Quantity", "quantity", "Qty", "qty"]);
+      return sum + (quantity || 0);
+    }, 0);
+  }
+
+  return pickNumber(item, [
+      "quantity",
+      "Quantity",
+      "qty",
+      "Qty",
+      "available",
+      "Available",
+      "stock",
+      "Stock",
+      "balance",
+      "Balance"
+    ]);
+}
+
+function normalizeOffers(offers) {
+  return offers.map((offer) => ({
+    storageId: offer?.StorageId ?? offer?.storageId ?? null,
+    storageName: offer?.StorageName || offer?.storageName || "",
+    region: offer?.Region || offer?.region || "",
+    quantity: offer?.Quantity ?? offer?.quantity ?? null,
+    price: offer?.Price ?? offer?.price ?? null,
+    purchaseReturns: offer?.PurchaseReturns ?? offer?.purchaseReturns ?? null,
+    returnsDaysLimit: offer?.ReturnsDaysLimit ?? offer?.returnsDaysLimit ?? null,
+    logistic: offer?.Logistic || offer?.logistic || null
+  }));
 }
 
 export function buildSLineSearchUrl(baseUrl, { article, brand }) {
@@ -309,7 +336,19 @@ function looksLikePart(value) {
   );
 }
 
-function normalizePrice(item) {
+function normalizePrice(item, offers = []) {
+  if (offers.length > 0) {
+    const prices = offers
+      .map((offer) => pickNumber(offer, ["Price", "price"]))
+      .filter((price) => price !== null);
+    if (prices.length > 0) {
+      return {
+        value: Math.min(...prices),
+        currency: pickString(item, ["currency", "Currency"]) || "UAH"
+      };
+    }
+  }
+
   const price = item?.price || item?.Price || item?.customerPrice || item?.CustomerPrice;
   if (price && typeof price === "object") {
     return {

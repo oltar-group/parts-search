@@ -253,9 +253,14 @@ function renderRemains(remains) {
     const item = document.createElement("li");
     const storage = document.createElement("span");
     const remain = document.createElement("strong");
+    const meta = document.createElement("small");
     storage.textContent = row.storage || "Warehouse";
     remain.textContent = valueOrDash(row.remain);
+    meta.textContent = row.meta || "";
     item.append(storage, remain);
+    if (row.meta) {
+      item.append(meta);
+    }
     list.append(item);
   }
 
@@ -295,18 +300,29 @@ function normalizeRemains(remains) {
           entry?.city?.name ||
           entry?.region?.name ||
           entry?.storageName ||
+          entry?.StorageName ||
           entry?.warehouseName ||
+          entry?.WarehouseName ||
           entry?.storeName ||
+          entry?.StoreName ||
           entry?.name ||
+          entry?.Name ||
           "",
         remain:
           entry?.remain ??
+          entry?.Remain ??
           entry?.balance ??
+          entry?.Balance ??
           entry?.quantity ??
+          entry?.Quantity ??
           entry?.qty ??
+          entry?.Qty ??
           entry?.available ??
+          entry?.Available ??
           entry?.stock ??
-          ""
+          entry?.Stock ??
+          "",
+        meta: formatRemainMeta(entry)
       }))
       .filter((entry) => entry.storage || entry.remain !== "");
   }
@@ -319,6 +335,44 @@ function normalizeRemains(remains) {
   }
 
   return [{ storage: "Supplier", remain: remains }];
+}
+
+function formatRemainMeta(entry) {
+  const parts = [];
+  const price = entry?.price ?? entry?.Price;
+  const region = entry?.region || entry?.Region;
+  const logistic = entry?.logistic || entry?.Logistic;
+  const deliveryType = logistic?.DeliveryType || logistic?.deliveryType;
+  const shippingDate = logistic?.ShippingDate || logistic?.shippingDate;
+
+  if (price !== undefined && price !== null && price !== "") {
+    parts.push(`${price} UAH`);
+  }
+  if (region) {
+    parts.push(region);
+  }
+  if (deliveryType) {
+    parts.push(deliveryType);
+  }
+  if (shippingDate) {
+    parts.push(formatDateTime(shippingDate));
+  }
+
+  return parts.join(" · ");
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
 }
 
 function formatProviders(providers) {

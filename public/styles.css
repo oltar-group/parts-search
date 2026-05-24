@@ -323,8 +323,8 @@ dd {
 }
 
 .stock-list li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   min-height: 34px;
   padding: 8px 10px;
@@ -342,6 +342,12 @@ dd {
 .stock-list strong {
   color: var(--ink);
   white-space: nowrap;
+}
+
+.stock-list small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .stock-empty {

@@ -56,6 +56,10 @@ The system SHALL return supplier results in a normalized response model that is 
 - **WHEN** another supplier provider is configured later
 - **THEN** its results can be merged into the same normalized response without changing the browser search contract
 
+#### Scenario: S-LINE returns offers
+- **WHEN** S-LINE returns `Parts[].Offers[]`
+- **THEN** the backend maps offers to remains, sums offer quantities into quantity, and uses the minimum offer price as the result price
+
 #### Scenario: Provider returns empty remains
 - **WHEN** a provider returns an explicit empty remains list
 - **THEN** the backend preserves the empty remains list and does not infer stock from quantity

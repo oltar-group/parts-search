@@ -43,6 +43,7 @@
 - [x] 5.9 Show provider-level no-match status when other providers return results.
 - [x] 5.10 Avoid broken provider action links for S-LINE when no direct product URL is returned.
 - [x] 5.11 Link provider labels to provider home pages.
+- [x] 5.12 Map S-LINE `Parts[].Offers[]` into remains, total quantity, minimum price, and logistics display.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options
