@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildSLineCabinetSearchUrl,
   normalizeSLineSearch,
   SLineProvider
 } from "../src/providers/sline.js";
@@ -71,7 +72,7 @@ test("normalizes flexible S-LINE response rows", () => {
   assert.deepEqual(results[0].remains, [
     { StorageName: "Kyiv", Quantity: 4 }
   ]);
-  assert.equal(results[0].providerUrl, "");
+  assert.equal(results[0].providerUrl, "https://s-line.ua/Home/Index?search=OC90");
 });
 
 test("uses direct S-LINE provider URL only when response includes one", () => {
@@ -87,6 +88,15 @@ test("uses direct S-LINE provider URL only when response includes one", () => {
   });
 
   assert.equal(results[0].providerUrl, "https://s-line.ua/cabinet/parts/1");
+});
+
+test("builds S-LINE cabinet search URL", () => {
+  assert.equal(
+    buildSLineCabinetSearchUrl("https://s-line.ua", {
+      article: "0451103079"
+    }),
+    "https://s-line.ua/Home/Index?search=0451103079"
+  );
 });
 
 test("normalizes S-LINE offers as remains and minimum price without aggregating quantity", () => {

@@ -41,7 +41,7 @@
 - [x] 5.7 Add validation and UI messaging for broad brand-only searches and provider timeouts.
 - [x] 5.8 Verify that empty remains are not inferred from quantity and are shown as no stock remains.
 - [x] 5.9 Show provider-level no-match status when other providers return results.
-- [x] 5.10 Avoid broken provider action links for S-LINE when no direct product URL is returned.
+- [x] 5.10 Use S-LINE cabinet search route for provider action links when no direct product URL is returned.
 - [x] 5.11 Link provider labels to provider home pages.
 - [x] 5.12 Map S-LINE `Parts[].Offers[]` into remains, minimum price, and logistics display without aggregating quantity.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.

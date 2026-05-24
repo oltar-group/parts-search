@@ -241,7 +241,7 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
       "MinimumOrderQuantity"
     ]),
     rawUrl,
-    providerUrl: rawUrl,
+    providerUrl: rawUrl || buildSLineCabinetSearchUrl(provider.webBaseUrl, { article }),
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
@@ -275,16 +275,13 @@ function normalizeOffers(offers) {
   }));
 }
 
-export function buildSLineSearchUrl(baseUrl, { article, brand }) {
+export function buildSLineCabinetSearchUrl(baseUrl, { article }) {
   const params = new URLSearchParams();
   if (article) {
-    params.set("number", article);
-  }
-  if (brand) {
-    params.set("manufacturer", brand);
+    params.set("search", article);
   }
 
-  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/?${params}`;
+  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/Home/Index?${params}`;
 }
 
 function extractRows(payload) {

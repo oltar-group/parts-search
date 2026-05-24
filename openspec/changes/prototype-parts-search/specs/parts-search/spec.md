@@ -91,9 +91,9 @@ The system SHALL display search results with enough detail for a user to compare
 - **WHEN** a result includes provider home URL
 - **THEN** the UI displays the provider label as a link to the provider home page
 
-#### Scenario: Provider has no verified public product URL
-- **WHEN** a provider result does not include a direct URL and the provider has no verified public search URL format
-- **THEN** the UI does not display a broken provider action link
+#### Scenario: S-LINE result has provider action link
+- **WHEN** S-LINE returns a result without a direct product URL
+- **THEN** the UI displays an action link to `https://s-line.ua/Home/Index?search={article}`
 
 #### Scenario: Result has remains
 - **WHEN** a result includes warehouse remains

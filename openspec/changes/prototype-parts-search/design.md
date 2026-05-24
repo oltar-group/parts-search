@@ -68,7 +68,7 @@ Rationale: supplier-provided images are the most accurate source for spare parts
 
 ### Availability and action handling
 
-The UI SHALL show `quantity` as a separate value and `remains` as its own availability section. If `remains` is an explicit empty list, the UI SHALL show a no-stock-remains state and SHALL NOT infer availability from `quantity`. If the provider result has no direct URL, the UniqTrade adapter SHALL build a fallback provider search link using `/ua/search-results?article={article}`. S-LINE SHALL NOT build a public provider URL unless the API response includes one, because `https://s-line.ua/?number=...` is not a verified product/search route.
+The UI SHALL show `quantity` as a separate value and `remains` as its own availability section. If `remains` is an explicit empty list, the UI SHALL show a no-stock-remains state and SHALL NOT infer availability from `quantity`. If the provider result has no direct URL, the UniqTrade adapter SHALL build a fallback provider search link using `/ua/search-results?article={article}`. S-LINE SHALL build a cabinet search link using `/Home/Index?search={article}`.
 
 Rationale: the API search can return a part even when the provider shop cannot sell it. Treating `quantity` as stock produced misleading UI, so stock must be based on remains or an explicit provider availability field.
 
