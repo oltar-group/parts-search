@@ -123,6 +123,23 @@ function renderResults(results) {
   resultsEl.replaceChildren(...results.map(renderResultCard));
 }
 
+function renderProviderLabel(providerEl, result) {
+  const label = result.providerName || result.providerId || "Supplier";
+  providerEl.replaceChildren();
+
+  if (!result.providerHomeUrl) {
+    providerEl.textContent = label;
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = result.providerHomeUrl;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = label;
+  providerEl.append(link);
+}
+
 function renderResultCard(result) {
   const node = template.content.firstElementChild.cloneNode(true);
   const imageWrap = node.querySelector(".image-wrap");
@@ -132,7 +149,7 @@ function renderResultCard(result) {
   const details = node.querySelector(".details");
   const actions = document.createElement("div");
 
-  provider.textContent = result.providerName || result.providerId || "Supplier";
+  renderProviderLabel(provider, result);
   title.textContent = result.title || [result.brand, result.article].filter(Boolean).join(" ");
   price.textContent = formatPrice(result.price);
 

@@ -31,6 +31,7 @@ test("normalizes UniqTrade rows with supplier images", () => {
 
   assert.equal(results.length, 1);
   assert.equal(results[0].providerId, "uniqtrade");
+  assert.equal(results[0].providerHomeUrl, "https://order24.utr.ua");
   assert.equal(results[0].brand, "MAHLE");
   assert.equal(results[0].article, "OC90");
   assert.deepEqual(results[0].price, { value: 120.5, currency: "UAH" });

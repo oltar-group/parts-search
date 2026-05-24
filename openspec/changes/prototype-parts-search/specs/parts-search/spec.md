@@ -83,6 +83,10 @@ The system SHALL display search results with enough detail for a user to compare
 - **WHEN** a result includes a direct provider URL or enough data to build a provider search URL
 - **THEN** the UI displays an action that opens the result or corresponding provider search page
 
+#### Scenario: Result provider label has home link
+- **WHEN** a result includes provider home URL
+- **THEN** the UI displays the provider label as a link to the provider home page
+
 #### Scenario: Provider has no verified public product URL
 - **WHEN** a provider result does not include a direct URL and the provider has no verified public search URL format
 - **THEN** the UI does not display a broken provider action link

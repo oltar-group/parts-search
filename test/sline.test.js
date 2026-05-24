@@ -37,6 +37,7 @@ test("S-LINE provider builds search request with API key and manufacturer", asyn
 
   assert.equal(results.length, 1);
   assert.equal(results[0].providerId, "sline");
+  assert.equal(results[0].providerHomeUrl, "https://s-line.ua");
   assert.equal(results[0].article, "4881533090");
   assert.equal(results[0].brand, "TOYOTA");
   assert.equal(results[0].price.value, 100);

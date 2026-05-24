@@ -219,6 +219,7 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
   return {
     providerId: provider.providerId || provider.id || DEFAULT_PROVIDER.id,
     providerName: provider.providerName || provider.name || DEFAULT_PROVIDER.name,
+    providerHomeUrl: provider.webBaseUrl || DEFAULT_PROVIDER.webBaseUrl,
     externalId,
     brand,
     displayBrand: brand,

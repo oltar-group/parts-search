@@ -43,7 +43,7 @@ Each supplier integration SHALL implement a small contract:
 
 The normalized result model should include `providerId`, `providerName`, `externalId`, `brand`, `displayBrand`, `article`, `title`, `category`, `price`, `quantity`, `remains`, `images`, `hasImage`, `multiplicity`, `rawUrl`, and `raw`.
 
-The prototype also carries `providerUrl` for user action links and `apiDetailUrl` for provider API diagnostics or future detail/cart workflows. `quantity` and `remains` must remain separate because UniqTrade can return a quantity-like value even when provider shop stock remains are empty.
+The prototype also carries `providerHomeUrl` for provider label links, `providerUrl` for result action links, and `apiDetailUrl` for provider API diagnostics or future detail/cart workflows. `quantity` and `remains` must remain separate because UniqTrade can return a quantity-like value even when provider shop stock remains are empty.
 
 Rationale: the UI and alternate channels can use one stable response while supplier-specific fields remain available in `raw` during the prototype. The alternative was to return UniqTrade JSON directly, but that would make the first API shape leak into every future integration.
 
@@ -102,6 +102,7 @@ Rationale: these alternatives reuse the same provider adapters and normalized re
 - Broad brand-only searches -> Reject before provider calls and ask for an exact article number.
 - Search result exists but cannot be purchased -> Display remains separately, show explicit empty-remains state, and use logs to inspect provider availability fields.
 - Provider public URL assumptions -> Only show provider action links from direct response URLs or verified provider-specific URL builders.
+- Provider discoverability -> Make provider labels link to provider home pages independently from result-specific action links.
 - Provider-specific no matches hidden by aggregate results -> Display provider status messages for zero-result providers even when another provider returns matches.
 - Expired or invalid UniqTrade credentials -> Keep credentials in environment variables, expose backend diagnostics, and map authentication failures to an operator-facing error.
 - Images missing or inaccurate -> Prefer supplier images, display placeholders when absent, and avoid synthetic images for exact part identification.
