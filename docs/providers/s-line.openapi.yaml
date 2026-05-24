@@ -1,0 +1,278 @@
+openapi: 3.1.0
+info:
+  title: S-LINE API
+  version: "1.0"
+  description: >
+    Partial S-LINE API contract used by the parts search prototype. Response
+    schemas are based on observed raw API output because the provided Postman
+    collection does not include examples.
+servers:
+  - url: https://s-line.ua/api/v1
+paths:
+  /parts/search:
+    get:
+      summary: Search spare parts by article number
+      operationId: searchParts
+      parameters:
+        - name: apikey
+          in: query
+          required: true
+          schema:
+            type: string
+          description: S-LINE API key.
+        - name: number
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "0451103079"
+          description: Spare part article number.
+        - name: manufacturer
+          in: query
+          required: false
+          schema:
+            type: string
+          example: BOSCH
+          description: Optional manufacturer/brand filter.
+        - name: currency
+          in: query
+          required: false
+          schema:
+            type: string
+          example: UAH
+          description: Optional currency code.
+        - name: storageId
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Optional storage filter.
+      responses:
+        "200":
+          description: Search response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchPartsResponse"
+              examples:
+                boschOilFilter:
+                  summary: BOSCH oil filter with offers
+                  value:
+                    Status: 1
+                    StatusDescription: success
+                    Currency: UAH
+                    Parts:
+                      - Id: 186304
+                        Manufacturer: BOSCH
+                        Number: "0451103079"
+                        Name: ФІЛЬТР ОЛИВИ
+                        Weight: 361.5
+                        Offers:
+                          - StorageId: 522
+                            PurchaseReturns: false
+                            ReturnsDaysLimit: null
+                            Region: Україна
+                            StorageName: TRLK
+                            Quantity: 12
+                            Price: 114.92
+                            Logistic:
+                              Status: 1
+                              DeliveryType: Авто
+                              ShippingDate: "2026-05-25T14:00:00"
+                              DeliveryAmount: 0
+                              Message: ""
+  /info/StorageList:
+    get:
+      summary: List storages
+      operationId: storageList
+      parameters:
+        - $ref: "#/components/parameters/ApiKey"
+      responses:
+        "200":
+          description: Storage list response. Shape not captured yet.
+  /info/DeliveryProfileList:
+    get:
+      summary: List delivery profiles
+      operationId: deliveryProfileList
+      parameters:
+        - $ref: "#/components/parameters/ApiKey"
+      responses:
+        "200":
+          description: Delivery profile list response. Shape not captured yet.
+  /info/CustomerInfo:
+    get:
+      summary: Customer information
+      operationId: customerInfo
+      parameters:
+        - $ref: "#/components/parameters/ApiKey"
+      responses:
+        "200":
+          description: Customer info response. Shape not captured yet.
+  /orders/basket:
+    get:
+      summary: Read basket
+      operationId: basket
+      parameters:
+        - $ref: "#/components/parameters/ApiKey"
+      responses:
+        "200":
+          description: Basket response. Shape not captured yet.
+  /orders/ToBasket:
+    post:
+      summary: Add items to basket
+      operationId: toBasket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToBasketRequest"
+      responses:
+        "200":
+          description: Add-to-basket response. Shape not captured yet.
+components:
+  parameters:
+    ApiKey:
+      name: apikey
+      in: query
+      required: true
+      schema:
+        type: string
+      description: S-LINE API key.
+  schemas:
+    SearchPartsResponse:
+      type: object
+      required:
+        - Status
+        - StatusDescription
+        - Currency
+        - Parts
+      properties:
+        Status:
+          type: integer
+          example: 1
+        StatusDescription:
+          type: string
+          example: success
+        Currency:
+          type: string
+          example: UAH
+        Parts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Part"
+    Part:
+      type: object
+      required:
+        - Id
+        - Manufacturer
+        - Number
+        - Name
+        - Offers
+      properties:
+        Id:
+          type: integer
+          example: 186304
+        Manufacturer:
+          type: string
+          example: BOSCH
+        Number:
+          type: string
+          example: "0451103079"
+        Name:
+          type: string
+          example: ФІЛЬТР ОЛИВИ
+        Weight:
+          type:
+            - number
+            - "null"
+          example: 361.5
+        Offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Offer"
+    Offer:
+      type: object
+      required:
+        - StorageId
+        - Region
+        - StorageName
+        - Quantity
+        - Price
+      properties:
+        StorageId:
+          type: integer
+          example: 522
+        PurchaseReturns:
+          type: boolean
+          example: false
+        ReturnsDaysLimit:
+          type:
+            - integer
+            - "null"
+          example: 7
+        Region:
+          type: string
+          example: Україна
+        StorageName:
+          type: string
+          example: TRLK
+        Quantity:
+          type: integer
+          example: 12
+        Price:
+          type: number
+          example: 114.92
+        Logistic:
+          $ref: "#/components/schemas/Logistic"
+    Logistic:
+      type: object
+      properties:
+        Status:
+          type: integer
+          example: 1
+        DeliveryType:
+          type: string
+          example: Авто
+        ShippingDate:
+          type: string
+          format: date-time
+          example: "2026-05-25T14:00:00"
+        DeliveryAmount:
+          type: number
+          example: 0
+        Message:
+          type: string
+          example: ""
+    ToBasketRequest:
+      type: object
+      required:
+        - ApiKey
+        - Currency
+        - items
+      properties:
+        ApiKey:
+          type: string
+        Currency:
+          type: string
+          example: USD
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - storageId
+              - PartId
+              - DeliveryProfileId
+              - Quantity
+            properties:
+              storageId:
+                type: integer
+              PartId:
+                type: integer
+              DeliveryProfileId:
+                type: integer
+              Quantity:
+                type: integer
+              Comment:
+                type: string

@@ -71,6 +71,12 @@ Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server 
 
 Useful when a result appears in API search but cannot be bought in the provider shop: check `quantity`, `remains`, price, provider URL, and any raw availability fields.
 
+## Provider API Docs
+
+- [S-LINE provider notes](docs/providers/s-line.md)
+- [S-LINE OpenAPI contract](docs/providers/s-line.openapi.yaml)
+- [S-LINE Postman collection](docs/providers/s-line.postman.json)
+
 ## API
 
 ```http
