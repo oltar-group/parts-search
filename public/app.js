@@ -173,7 +173,9 @@ function renderResultCard(result) {
   const rows = [
     ["Brand", result.displayBrand || result.brand],
     ["Article", result.article],
-    ["Quantity", valueOrDash(result.quantity)],
+    ...(result.providerId === "sline"
+      ? []
+      : [["Quantity", valueOrDash(result.quantity)]]),
     ["Multiplicity", valueOrDash(result.multiplicity)],
     ["Category", result.category],
     ["Provider ID", result.externalId]
@@ -189,16 +191,12 @@ function renderResultCard(result) {
     details.append(wrapper);
   }
 
-  const stockBlock = renderRemains(result.remains);
-  if (stockBlock) {
-    node.querySelector(".result-body").append(stockBlock);
-  }
-
   actions.className = "result-actions";
-  if (result.providerUrl) {
+  const providerActionUrl = getProviderActionUrl(result);
+  if (providerActionUrl) {
     const providerLink = document.createElement("a");
     providerLink.className = "provider-link";
-    providerLink.href = result.providerUrl;
+    providerLink.href = providerActionUrl;
     providerLink.target = "_blank";
     providerLink.rel = "noopener noreferrer";
     providerLink.textContent = "Open in provider";
@@ -214,6 +212,11 @@ function renderResultCard(result) {
     node.querySelector(".result-body").append(actions);
   }
 
+  const stockBlock = renderRemains(result.remains);
+  if (stockBlock) {
+    node.querySelector(".result-body").append(stockBlock);
+  }
+
   return node;
 }
 
@@ -227,6 +230,19 @@ function formatPrice(price) {
     currency: price.currency || "UAH",
     maximumFractionDigits: 2
   }).format(price.value);
+}
+
+function getProviderActionUrl(result) {
+  if (result.providerUrl) {
+    return result.providerUrl;
+  }
+
+  if (result.providerId === "sline" && result.article) {
+    const params = new URLSearchParams({ search: result.article });
+    return `https://s-line.ua/Home/Index?${params}`;
+  }
+
+  return "";
 }
 
 function valueOrDash(value) {

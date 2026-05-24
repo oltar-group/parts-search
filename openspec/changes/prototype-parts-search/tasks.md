@@ -44,6 +44,8 @@
 - [x] 5.10 Use S-LINE cabinet search route for provider action links when no direct product URL is returned.
 - [x] 5.11 Link provider labels to provider home pages.
 - [x] 5.12 Map S-LINE `Parts[].Offers[]` into remains, minimum price, and logistics display without aggregating quantity.
+- [x] 5.14 Omit top-level Quantity for S-LINE results.
+- [x] 5.13 Keep provider action layout consistent across providers.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options

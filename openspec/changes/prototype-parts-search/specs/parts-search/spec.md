@@ -60,6 +60,10 @@ The system SHALL return supplier results in a normalized response model that is 
 - **WHEN** S-LINE returns `Parts[].Offers[]`
 - **THEN** the backend maps offers to remains and uses the minimum offer price as the result price without aggregating offer quantities into result quantity
 
+#### Scenario: S-LINE displays availability
+- **WHEN** the UI displays an S-LINE result
+- **THEN** it omits the top-level Quantity field and shows offer quantities only in Remains
+
 #### Scenario: Provider returns empty remains
 - **WHEN** a provider returns an explicit empty remains list
 - **THEN** the backend preserves the empty remains list and does not infer stock from quantity
@@ -98,6 +102,10 @@ The system SHALL display search results with enough detail for a user to compare
 #### Scenario: Result has remains
 - **WHEN** a result includes warehouse remains
 - **THEN** the UI displays the remains separately from quantity
+
+#### Scenario: Result action layout is consistent
+- **WHEN** any provider result includes a provider action link
+- **THEN** the UI displays the provider action before remains in the same card location for every provider
 
 #### Scenario: Result has no remains
 - **WHEN** a result includes an explicit empty remains list
