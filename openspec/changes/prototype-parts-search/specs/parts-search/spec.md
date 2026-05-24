@@ -58,7 +58,7 @@ The system SHALL return supplier results in a normalized response model that is 
 
 #### Scenario: S-LINE returns offers
 - **WHEN** S-LINE returns `Parts[].Offers[]`
-- **THEN** the backend maps offers to remains, sums offer quantities into quantity, and uses the minimum offer price as the result price
+- **THEN** the backend maps offers to remains and uses the minimum offer price as the result price without aggregating offer quantities into result quantity
 
 #### Scenario: Provider returns empty remains
 - **WHEN** a provider returns an explicit empty remains list

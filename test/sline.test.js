@@ -89,7 +89,7 @@ test("uses direct S-LINE provider URL only when response includes one", () => {
   assert.equal(results[0].providerUrl, "https://s-line.ua/cabinet/parts/1");
 });
 
-test("normalizes S-LINE offers as remains, total quantity, and minimum price", () => {
+test("normalizes S-LINE offers as remains and minimum price without aggregating quantity", () => {
   const results = normalizeSLineSearch({
     Parts: [
       {
@@ -133,7 +133,7 @@ test("normalizes S-LINE offers as remains, total quantity, and minimum price", (
   });
 
   assert.equal(results.length, 1);
-  assert.equal(results[0].quantity, 28);
+  assert.equal(results[0].quantity, null);
   assert.deepEqual(results[0].price, { value: 114.92, currency: "UAH" });
   assert.deepEqual(results[0].remains, [
     {

@@ -230,7 +230,7 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
     title: title || [brand, article].filter(Boolean).join(" "),
     category: pickString(item, ["category", "Category", "group", "Group"]),
     price: normalizePrice(item, offers),
-    quantity: normalizeQuantity(item, offers),
+    quantity: normalizeQuantity(item),
     remains: offers.length > 0 ? normalizeOffers(offers) : pickRemains(item),
     images: [],
     hasImage: false,
@@ -247,14 +247,7 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
   };
 }
 
-function normalizeQuantity(item, offers) {
-  if (offers.length > 0) {
-    return offers.reduce((sum, offer) => {
-      const quantity = pickNumber(offer, ["Quantity", "quantity", "Qty", "qty"]);
-      return sum + (quantity || 0);
-    }, 0);
-  }
-
+function normalizeQuantity(item) {
   return pickNumber(item, [
       "quantity",
       "Quantity",

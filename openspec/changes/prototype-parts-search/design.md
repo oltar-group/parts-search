@@ -72,7 +72,7 @@ The UI SHALL show `quantity` as a separate value and `remains` as its own availa
 
 Rationale: the API search can return a part even when the provider shop cannot sell it. Treating `quantity` as stock produced misleading UI, so stock must be based on remains or an explicit provider availability field.
 
-For S-LINE, availability comes from `Parts[].Offers[]`. Each offer represents a storage-specific availability row with `StorageName`, `Quantity`, `Price`, region, return policy, and logistics. The adapter maps offers to `remains`, sums offer quantities for the result-level `quantity`, and uses the minimum offer price as the result-level price so users can compare providers quickly while still seeing per-storage detail.
+For S-LINE, availability comes from `Parts[].Offers[]`. Each offer represents a storage-specific availability row with `StorageName`, `Quantity`, `Price`, region, return policy, and logistics. The adapter maps offers to `remains` and uses the minimum offer price as the result-level price so users can compare providers quickly while still seeing per-storage detail. It SHALL NOT sum offer quantities into result-level `quantity`, because that value is displayed as a separate provider field rather than aggregate availability.
 
 ### Search input and timeout handling
 
