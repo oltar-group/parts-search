@@ -68,7 +68,7 @@ Rationale: supplier-provided images are the most accurate source for spare parts
 
 ### Availability and action handling
 
-The UI SHALL show `quantity` as a separate value and `remains` as its own availability section. If `remains` is an explicit empty list, the UI SHALL show a no-stock-remains state and SHALL NOT infer availability from `quantity`. If the provider result has no direct URL, the UniqTrade adapter SHALL build a fallback provider search link using `/ua/search-results?article={article}`.
+The UI SHALL show `quantity` as a separate value and `remains` as its own availability section. If `remains` is an explicit empty list, the UI SHALL show a no-stock-remains state and SHALL NOT infer availability from `quantity`. If the provider result has no direct URL, the UniqTrade adapter SHALL build a fallback provider search link using `/ua/search-results?article={article}`. S-LINE SHALL NOT build a public provider URL unless the API response includes one, because `https://s-line.ua/?number=...` is not a verified product/search route.
 
 Rationale: the API search can return a part even when the provider shop cannot sell it. Treating `quantity` as stock produced misleading UI, so stock must be based on remains or an explicit provider availability field.
 
@@ -101,6 +101,7 @@ Rationale: these alternatives reuse the same provider adapters and normalized re
 - Supplier API availability or rate limits -> Add request timeout, provider-level error state, and clear partial-result rendering when only some providers fail.
 - Broad brand-only searches -> Reject before provider calls and ask for an exact article number.
 - Search result exists but cannot be purchased -> Display remains separately, show explicit empty-remains state, and use logs to inspect provider availability fields.
+- Provider public URL assumptions -> Only show provider action links from direct response URLs or verified provider-specific URL builders.
 - Provider-specific no matches hidden by aggregate results -> Display provider status messages for zero-result providers even when another provider returns matches.
 - Expired or invalid UniqTrade credentials -> Keep credentials in environment variables, expose backend diagnostics, and map authentication failures to an operator-facing error.
 - Images missing or inaccurate -> Prefer supplier images, display placeholders when absent, and avoid synthetic images for exact part identification.

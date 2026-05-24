@@ -205,7 +205,16 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
       item?.productId ||
       `${article || "part"}-${index}`
   );
-  const providerUrl = buildSLineSearchUrl(provider.webBaseUrl, { article, brand });
+  const rawUrl = pickString(item, [
+    "url",
+    "Url",
+    "rawUrl",
+    "RawUrl",
+    "productUrl",
+    "ProductUrl",
+    "detailUrl",
+    "DetailUrl"
+  ]);
 
   return {
     providerId: provider.providerId || provider.id || DEFAULT_PROVIDER.id,
@@ -238,8 +247,8 @@ export function normalizeSLineItem(item, index, provider = DEFAULT_PROVIDER) {
       "minimumOrderQuantity",
       "MinimumOrderQuantity"
     ]),
-    rawUrl: "",
-    providerUrl,
+    rawUrl,
+    providerUrl: rawUrl,
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };

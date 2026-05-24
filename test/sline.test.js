@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  buildSLineSearchUrl,
   normalizeSLineSearch,
   SLineProvider
 } from "../src/providers/sline.js";
@@ -71,16 +70,22 @@ test("normalizes flexible S-LINE response rows", () => {
   assert.deepEqual(results[0].remains, [
     { StorageName: "Kyiv", Quantity: 4 }
   ]);
+  assert.equal(results[0].providerUrl, "");
 });
 
-test("builds S-LINE provider search URL", () => {
-  assert.equal(
-    buildSLineSearchUrl("https://s-line.ua", {
-      article: "4881533090",
-      brand: "TOYOTA"
-    }),
-    "https://s-line.ua/?number=4881533090&manufacturer=TOYOTA"
-  );
+test("uses direct S-LINE provider URL only when response includes one", () => {
+  const results = normalizeSLineSearch({
+    data: [
+      {
+        PartId: 1,
+        Number: "4881533090",
+        Manufacturer: "TOYOTA",
+        ProductUrl: "https://s-line.ua/cabinet/parts/1"
+      }
+    ]
+  });
+
+  assert.equal(results[0].providerUrl, "https://s-line.ua/cabinet/parts/1");
 });
 
 test("registers S-LINE provider only when API key is configured", () => {
