@@ -1,5 +1,6 @@
 import { ProviderError } from "./provider-error.js";
 import { redactSensitive } from "../redact.js";
+import { logEvent } from "../logger.js";
 
 const DEFAULT_PROVIDER = {
   id: "uniqtrade",
@@ -191,20 +192,14 @@ export class UniqTradeProvider {
       return;
     }
 
-    console.info(
-      JSON.stringify(
-        {
+    logEvent({
           event: "supplier.raw_response",
           providerId: this.id,
           article,
           brand: brand || "",
           path,
           payload: redactSensitive(payload)
-        },
-        null,
-        2
-      )
-    );
+        });
   }
 
   logSearchSummary({ article, brand, results }) {
@@ -212,9 +207,7 @@ export class UniqTradeProvider {
       return;
     }
 
-    console.info(
-      JSON.stringify(
-        {
+    logEvent({
           event: "supplier.search_summary",
           providerId: this.id,
           article,
@@ -232,11 +225,7 @@ export class UniqTradeProvider {
             providerUrl: result.providerUrl,
             apiDetailUrl: result.apiDetailUrl
           }))
-        },
-        null,
-        2
-      )
-    );
+        });
   }
 }
 

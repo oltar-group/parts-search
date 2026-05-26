@@ -3,6 +3,7 @@ import { createServer as createHttpServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnvFile, readConfig } from "./config.js";
+import { configureLogger } from "./logger.js";
 import { createProviders } from "./providers/index.js";
 import { searchParts } from "./search-service.js";
 
@@ -99,6 +100,7 @@ function sendJson(res, status, payload) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   loadEnvFile();
   const config = readConfig();
+  configureLogger(config.logging);
   const server = createServer({ config });
 
   server.on("error", (error) => {

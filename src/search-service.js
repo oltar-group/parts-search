@@ -1,5 +1,6 @@
 import { providerErrorToResponse } from "./providers/provider-error.js";
 import { redactSensitive } from "./redact.js";
+import { logEvent } from "./logger.js";
 
 export function validateSearchInput(query) {
   const article = String(query.q || query.article || "").trim();
@@ -116,20 +117,14 @@ export async function searchParts({
   };
 
   if (logLevel === "summary" || logLevel === "raw") {
-    console.info(
-      JSON.stringify(
-        {
+    logEvent({
           event: "parts.search_response",
           query: body.query,
           resultCount: body.results.length,
           errors: body.errors,
           providers: body.providers,
           durationMs: body.meta.durationMs
-        },
-        null,
-        2
-      )
-    );
+        });
   }
 
   return {

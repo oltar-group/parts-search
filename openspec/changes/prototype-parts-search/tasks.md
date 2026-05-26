@@ -48,6 +48,8 @@
 - [x] 5.13 Keep provider action layout consistent across providers.
 - [x] 5.15 Collapse long remains lists behind show/hide control.
 - [x] 5.16 Add Tehnomir provider using token-based `POST /price/search` and normalize `rests[]`.
+- [x] 5.17 Add Autonova-D provider using token auth, article lookup, and client-specific offer details.
+- [x] 5.18 Add rotating file logs for supplier diagnostics.
 - [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options

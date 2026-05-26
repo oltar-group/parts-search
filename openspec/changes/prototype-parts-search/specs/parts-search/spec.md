@@ -72,6 +72,14 @@ The system SHALL return supplier results in a normalized response model that is 
 - **WHEN** Tehnomir returns a rest with `quantityType=MORE`
 - **THEN** the UI displays the remain quantity as greater than the returned quantity
 
+#### Scenario: Autonova-D returns client offers
+- **WHEN** Autonova-D returns article matches and client-specific part offers
+- **THEN** the backend maps detail offer rows to remains and uses the minimum offer price as the result price
+
+#### Scenario: Autonova-D search has brand filter
+- **WHEN** Autonova-D article search returns multiple brands and the user supplied a brand filter
+- **THEN** the backend filters Autonova-D rows by brand before loading client-specific detail offers
+
 #### Scenario: Provider returns empty remains
 - **WHEN** a provider returns an explicit empty remains list
 - **THEN** the backend preserves the empty remains list and does not infer stock from quantity
@@ -152,6 +160,10 @@ The system SHALL provide optional server-side search logging for debugging suppl
 #### Scenario: Raw logging is enabled
 - **WHEN** `SEARCH_LOG_LEVEL=raw`
 - **THEN** the server logs the redacted raw supplier response in addition to the summary
+
+#### Scenario: File logging is enabled
+- **WHEN** `SEARCH_LOG_FILE` is configured
+- **THEN** the server writes search logs to that file and rotates them across the configured file count
 
 #### Scenario: Sensitive fields are logged
 - **WHEN** logged data includes token, password, secret, or credential fields

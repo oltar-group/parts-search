@@ -39,6 +39,11 @@ export function readConfig(env = process.env) {
     port: parseInt(env.PORT || "3000", 10),
     includeSupplierImages: env.INCLUDE_SUPPLIER_IMAGES !== "false",
     searchLogLevel: env.SEARCH_LOG_LEVEL || "off",
+    logging: {
+      filePath: env.SEARCH_LOG_FILE || "logs/search.log",
+      maxBytes: parseInt(env.SEARCH_LOG_MAX_BYTES || "1048576", 10),
+      maxFiles: parseInt(env.SEARCH_LOG_MAX_FILES || "5", 10)
+    },
     uniqtrade: {
       baseUrl: env.UNIQTRADE_API_BASE_URL || "https://order24-api.utr.ua",
       webBaseUrl: env.UNIQTRADE_WEB_BASE_URL || "https://order24.utr.ua",
@@ -66,6 +71,18 @@ export function readConfig(env = process.env) {
       currency: env.TEHNOMIR_CURRENCY || "UAH",
       isShowAnalogs: env.TEHNOMIR_SHOW_ANALOGS || "",
       timeoutMs: parseInt(env.TEHNOMIR_TIMEOUT_MS || "20000", 10),
+      logLevel: env.SEARCH_LOG_LEVEL || "off"
+    },
+    autonova: {
+      baseUrl: env.AUTONOVA_API_BASE_URL || "https://api.autonovad.ua/stable",
+      webBaseUrl: env.AUTONOVA_WEB_BASE_URL || "https://autonovad.ua",
+      login: env.AUTONOVA_LOGIN || "",
+      password: env.AUTONOVA_PASSWORD || "",
+      clientId: env.AUTONOVA_CLIENT_ID || "",
+      authLoginField: env.AUTONOVA_AUTH_LOGIN_FIELD || "login",
+      filterByResultCategory: env.AUTONOVA_FILTER_BY_RESULT_CATEGORY || "1,2,3",
+      maxDetails: env.AUTONOVA_MAX_DETAILS || "8",
+      timeoutMs: parseInt(env.AUTONOVA_TIMEOUT_MS || "20000", 10),
       logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };

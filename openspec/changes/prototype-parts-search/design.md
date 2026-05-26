@@ -76,6 +76,8 @@ For S-LINE, availability comes from `Parts[].Offers[]`. Each offer represents a 
 
 For Tehnomir, the API is action-based JSON over HTTP rather than resource-oriented REST. Search uses `POST /price/search` with `apiToken` and `code` in the JSON body. Availability comes from `data[].rests[]`, where `quantity` can be exact or lower-bound depending on `quantityType`. The adapter maps rests to `remains`, displays `quantityType=MORE` as `> N`, uses the minimum rest price as the result-level price, and leaves top-level `quantity` empty to avoid presenting provider stock as an aggregate quantity.
 
+For Autonova-D, the API uses temporary bearer tokens from `POST /api/v1/auth/token`, with refresh through `GET /api/v1/auth/token/refresh/{refreshToken}`. Search is a two-step flow: `GET /api/v1/wares/article/{articleId}` finds matching parts, then `GET /api/v1/wares/clients/{clientId}/parts/{partId}?FilterByResultCategory=1,2,3` loads client-specific availability and offers. Because the current UI provides brand as free text while Autonova's exact search uses `brandId`, the adapter filters by brand text after article lookup and before detail loading.
+
 Result cards use the same layout for all providers: core fields first, provider action link next, remains below actions. This keeps S-LINE cards with many offers from hiding the provider action below a long remains list. Remains render the first three rows by default with a show/hide control for the full list.
 
 ### Search input and timeout handling
