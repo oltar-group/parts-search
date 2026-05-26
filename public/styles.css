@@ -306,11 +306,33 @@ dd {
   border-top: 1px solid var(--line);
 }
 
+.stock-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .stock-section h3 {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.2;
+}
+
+.stock-toggle {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.stock-toggle:hover {
+  background: #f8fafb;
 }
 
 .stock-list {

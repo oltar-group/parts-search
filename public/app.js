@@ -255,17 +255,48 @@ function renderRemains(remains) {
     return renderEmptyRemains(remains);
   }
 
+  const visibleLimit = 3;
+  const hasHiddenRows = rows.length > visibleLimit;
   const section = document.createElement("section");
   section.className = "stock-section";
 
+  const header = document.createElement("div");
+  header.className = "stock-header";
+
   const title = document.createElement("h3");
-  title.textContent = "Remains";
-  section.append(title);
+  title.textContent = `Remains (${rows.length})`;
+  header.append(title);
 
   const list = document.createElement("ul");
   list.className = "stock-list";
 
-  for (const row of rows) {
+  for (const row of rows.slice(0, visibleLimit)) {
+    list.append(renderRemainRow(row));
+  }
+
+  section.append(header, list);
+
+  if (hasHiddenRows) {
+    const toggle = document.createElement("button");
+    toggle.className = "stock-toggle";
+    toggle.type = "button";
+    toggle.textContent = `Show all ${rows.length}`;
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      toggle.textContent = expanded ? `Show all ${rows.length}` : "Hide offers";
+      list.replaceChildren(
+        ...(!expanded ? rows : rows.slice(0, visibleLimit)).map(renderRemainRow)
+      );
+    });
+    toggle.setAttribute("aria-expanded", "false");
+    header.append(toggle);
+  }
+
+  return section;
+}
+
+function renderRemainRow(row) {
     const item = document.createElement("li");
     const storage = document.createElement("span");
     const remain = document.createElement("strong");
@@ -277,11 +308,7 @@ function renderRemains(remains) {
     if (row.meta) {
       item.append(meta);
     }
-    list.append(item);
-  }
-
-  section.append(list);
-  return section;
+    return item;
 }
 
 function renderEmptyRemains(remains) {
@@ -356,13 +383,22 @@ function normalizeRemains(remains) {
 function formatRemainMeta(entry) {
   const parts = [];
   const price = entry?.price ?? entry?.Price;
+  const currency = entry?.currency || entry?.Currency || "UAH";
   const region = entry?.region || entry?.Region;
   const logistic = entry?.logistic || entry?.Logistic;
-  const deliveryType = logistic?.DeliveryType || logistic?.deliveryType;
-  const shippingDate = logistic?.ShippingDate || logistic?.shippingDate;
+  const deliveryType =
+    entry?.deliveryType ||
+    entry?.DeliveryType ||
+    logistic?.DeliveryType ||
+    logistic?.deliveryType;
+  const shippingDate =
+    entry?.deliveryDate ||
+    entry?.DeliveryDate ||
+    logistic?.ShippingDate ||
+    logistic?.shippingDate;
 
   if (price !== undefined && price !== null && price !== "") {
-    parts.push(`${price} UAH`);
+    parts.push(`${price} ${currency}`);
   }
   if (region) {
     parts.push(region);
