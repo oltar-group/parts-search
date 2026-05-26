@@ -58,6 +58,38 @@ test("Tehnomir provider posts article search with API token", async () => {
   assert.equal(results[0].remains[0].quantity, "> 20");
 });
 
+test("Tehnomir provider honors text brand filter after search", async () => {
+  const provider = new TehnomirProvider({
+    baseUrl: "https://api.tehnomir.com.ua",
+    apiToken: "secret-token",
+    fetchImpl: async () =>
+      jsonResponse(200, {
+        success: true,
+        data: [
+          {
+            productId: 1,
+            brand: "MAHLE",
+            code: "OC90",
+            descriptionRus: "Масляный фильтр",
+            rests: []
+          },
+          {
+            productId: 2,
+            brand: "BOSCH",
+            code: "OC90",
+            descriptionRus: "Масляный фильтр",
+            rests: []
+          }
+        ]
+      })
+  });
+
+  const results = await provider.search({ article: "OC90", brand: "MAHLE" });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].brand, "MAHLE");
+});
+
 test("normalizes Tehnomir price/search response", () => {
   const results = normalizeTehnomirSearch({
     success: true,
@@ -138,6 +170,24 @@ test("normalizes Tehnomir price/search response", () => {
       isPriceFinal: null
     }
   ]);
+});
+
+test("preserves explicit empty Tehnomir rests", () => {
+  const results = normalizeTehnomirSearch({
+    success: true,
+    data: [
+      {
+        productId: 12,
+        brand: "MAHLE",
+        code: "OC90",
+        descriptionRus: "Масляный фильтр",
+        rests: []
+      }
+    ]
+  });
+
+  assert.equal(results.length, 1);
+  assert.deepEqual(results[0].remains, []);
 });
 
 test("builds Tehnomir search URL", () => {

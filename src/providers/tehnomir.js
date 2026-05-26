@@ -30,7 +30,7 @@ export class TehnomirProvider {
     return Boolean(this.apiToken);
   }
 
-  async search({ article }) {
+  async search({ article, brand }) {
     if (!this.isConfigured()) {
       throw new ProviderError(
         "auth_not_configured",
@@ -40,6 +40,7 @@ export class TehnomirProvider {
     }
 
     const normalizedArticle = String(article || "").trim();
+    const normalizedBrand = String(brand || "").trim();
     const body = {
       apiToken: this.apiToken,
       code: normalizedArticle
@@ -65,7 +66,7 @@ export class TehnomirProvider {
     }
 
     const payload = await safeJson(response);
-    this.logRawSearch({ article: normalizedArticle, path, payload });
+    this.logRawSearch({ article: normalizedArticle, brand: normalizedBrand, path, payload });
 
     if (payload?.success === false) {
       throw new ProviderError(
@@ -79,8 +80,8 @@ export class TehnomirProvider {
       providerId: this.id,
       providerName: this.name,
       webBaseUrl: this.webBaseUrl
-    });
-    this.logSearchSummary({ article: normalizedArticle, results });
+    }).filter((result) => matchesBrandFilter(result, normalizedBrand));
+    this.logSearchSummary({ article: normalizedArticle, brand: normalizedBrand, results });
     return results;
   }
 
@@ -119,7 +120,7 @@ export class TehnomirProvider {
     );
   }
 
-  logRawSearch({ article, path, payload }) {
+  logRawSearch({ article, brand, path, payload }) {
     if (this.logLevel !== "raw") {
       return;
     }
@@ -130,7 +131,7 @@ export class TehnomirProvider {
           event: "supplier.raw_response",
           providerId: this.id,
           article,
-          brand: "",
+          brand: brand || "",
           path,
           payload: redactSensitive(payload)
         },
@@ -140,7 +141,7 @@ export class TehnomirProvider {
     );
   }
 
-  logSearchSummary({ article, results }) {
+  logSearchSummary({ article, brand, results }) {
     if (this.logLevel !== "summary" && this.logLevel !== "raw") {
       return;
     }
@@ -151,7 +152,7 @@ export class TehnomirProvider {
           event: "supplier.search_summary",
           providerId: this.id,
           article,
-          brand: "",
+          brand: brand || "",
           resultCount: results.length,
           results: results.map((result) => ({
             id: result.externalId,
@@ -184,9 +185,8 @@ export function normalizeTehnomirItem(item, index, provider = DEFAULT_PROVIDER) 
   const title =
     pickString(item, ["descriptionUa", "descriptionRus", "description"]) ||
     [brand, article].filter(Boolean).join(" ");
-  const rests = Array.isArray(item?.rests || item?.Rests)
-    ? item?.rests || item?.Rests
-    : [];
+  const rests = pickArray(item, ["rests", "Rests"]);
+  const restRows = rests || [];
   const images = normalizeImages(item?.images || item?.Images);
   const externalId = String(
     item?.productId || item?.ProductId || `${article || "part"}-${index}`
@@ -202,12 +202,12 @@ export function normalizeTehnomirItem(item, index, provider = DEFAULT_PROVIDER) 
     article,
     title,
     category: "",
-    price: normalizePrice(item, rests),
+    price: normalizePrice(item, restRows),
     quantity: null,
-    remains: rests.length > 0 ? normalizeRests(rests) : null,
+    remains: rests ? normalizeRests(rests) : null,
     images,
     hasImage: images.length > 0,
-    multiplicity: normalizeMultiplicity(rests),
+    multiplicity: normalizeMultiplicity(restRows),
     rawUrl: "",
     providerUrl: buildTehnomirSearchUrl(provider.webBaseUrl, { article }),
     apiDetailUrl: "",
@@ -340,6 +340,29 @@ function looksLikePart(value) {
       value?.productId ||
       value?.ProductId
   );
+}
+
+function matchesBrandFilter(result, brand) {
+  if (!brand) {
+    return true;
+  }
+
+  return normalizeComparable(result.displayBrand || result.brand) === normalizeComparable(brand);
+}
+
+function normalizeComparable(value) {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase();
+}
+
+function pickArray(item, keys) {
+  for (const key of keys) {
+    if (Array.isArray(item?.[key])) {
+      return item[key];
+    }
+  }
+  return null;
 }
 
 function pickString(item, keys) {
