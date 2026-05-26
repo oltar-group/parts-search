@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, renameSync, statSync, appendFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  renameSync,
+  statSync,
+  truncateSync
+} from "node:fs";
 import { dirname } from "node:path";
 
 let fileConfig = {
@@ -26,7 +33,11 @@ export function logEvent(event) {
     return;
   }
 
-  appendRotatingLine(`${line}\n`);
+  try {
+    appendRotatingLine(`${line}\n`);
+  } catch (error) {
+    console.warn(`Search log write failed: ${error?.message || error}`);
+  }
 }
 
 function appendRotatingLine(line) {
@@ -42,6 +53,11 @@ function rotateIfNeeded(nextBytes) {
 
   const size = statSync(fileConfig.path).size;
   if (size + nextBytes <= fileConfig.maxBytes) {
+    return;
+  }
+
+  if (fileConfig.maxFiles === 1) {
+    truncateSync(fileConfig.path, 0);
     return;
   }
 
