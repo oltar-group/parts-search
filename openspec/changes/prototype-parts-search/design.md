@@ -74,7 +74,9 @@ Rationale: the API search can return a part even when the provider shop cannot s
 
 For S-LINE, availability comes from `Parts[].Offers[]`. Each offer represents a storage-specific availability row with `StorageName`, `Quantity`, `Price`, region, return policy, and logistics. The adapter maps offers to `remains` and uses the minimum offer price as the result-level price so users can compare providers quickly while still seeing per-storage detail. It SHALL NOT sum offer quantities into result-level `quantity`, because that value is displayed as a separate provider field rather than aggregate availability. The UI omits top-level `Quantity` for S-LINE and shows offer quantities only in `Remains`.
 
-Result cards use the same layout for all providers: core fields first, provider action link next, remains below actions. This keeps S-LINE cards with many offers from hiding the provider action below a long remains list.
+For Tehnomir, the API is action-based JSON over HTTP rather than resource-oriented REST. Search uses `POST /price/search` with `apiToken` and `code` in the JSON body. Availability comes from `data[].rests[]`, where `quantity` can be exact or lower-bound depending on `quantityType`. The adapter maps rests to `remains`, displays `quantityType=MORE` as `> N`, uses the minimum rest price as the result-level price, and leaves top-level `quantity` empty to avoid presenting provider stock as an aggregate quantity.
+
+Result cards use the same layout for all providers: core fields first, provider action link next, remains below actions. This keeps S-LINE cards with many offers from hiding the provider action below a long remains list. Remains render the first three rows by default with a show/hide control for the full list.
 
 ### Search input and timeout handling
 

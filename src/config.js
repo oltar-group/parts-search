@@ -58,6 +58,15 @@ export function readConfig(env = process.env) {
       sendBrandFlag: env.SLINE_SEND_BRAND_FLAG === "true",
       timeoutMs: parseInt(env.SLINE_TIMEOUT_MS || "20000", 10),
       logLevel: env.SEARCH_LOG_LEVEL || "off"
+    },
+    tehnomir: {
+      baseUrl: env.TEHNOMIR_API_BASE_URL || "https://api.tehnomir.com.ua",
+      webBaseUrl: env.TEHNOMIR_WEB_BASE_URL || "https://tehnomir.com.ua",
+      apiToken: env.TEHNOMIR_API_TOKEN || "",
+      currency: env.TEHNOMIR_CURRENCY || "UAH",
+      isShowAnalogs: env.TEHNOMIR_SHOW_ANALOGS || "",
+      timeoutMs: parseInt(env.TEHNOMIR_TIMEOUT_MS || "20000", 10),
+      logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };
 }

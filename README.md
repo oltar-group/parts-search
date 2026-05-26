@@ -8,6 +8,7 @@ Small full-stack prototype for searching spare parts through supplier APIs. The 
 - Exposes `GET /api/parts/search?q=<article>&brand=<brand>`.
 - Keeps UniqTrade credentials and JWT tokens on the server.
 - Enables S-LINE as a second provider when `SLINE_API_KEY` is configured.
+- Enables Tehnomir as another provider when `TEHNOMIR_API_TOKEN` is configured.
 - Calls UniqTrade search with `info=1` so supplier image metadata can be shown.
 - Normalizes provider responses into one result model.
 - Handles loading, empty results, provider errors, auth errors, and missing images.
@@ -32,6 +33,7 @@ Fill in:
 - `UNIQTRADE_BROWSER_FINGERPRINT`
 - `UNIQTRADE_WEB_BASE_URL` if the provider shop URL differs from `https://order24.utr.ua`
 - `SLINE_API_KEY` to enable S-LINE search
+- `TEHNOMIR_API_TOKEN` to enable Tehnomir search
 
 Then run:
 
@@ -67,7 +69,7 @@ openspec validate prototype-parts-search
 
 ## Search Logging
 
-Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server console. Use `SEARCH_LOG_LEVEL=raw` to also print the redacted raw UniqTrade response.
+Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server console. Use `SEARCH_LOG_LEVEL=raw` to also print redacted raw supplier responses.
 
 Useful when a result appears in API search but cannot be bought in the provider shop: check `quantity`, `remains`, price, provider URL, and any raw availability fields.
 
@@ -76,6 +78,8 @@ Useful when a result appears in API search but cannot be bought in the provider 
 - [S-LINE provider notes](docs/providers/s-line.md)
 - [S-LINE OpenAPI contract](docs/providers/s-line.openapi.yaml)
 - [S-LINE Postman collection](docs/providers/s-line.postman.json)
+- [Tehnomir provider notes](docs/providers/tehnomir.md)
+- [Tehnomir OpenAPI contract](docs/providers/tehnomir.openapi.json)
 
 ## API
 

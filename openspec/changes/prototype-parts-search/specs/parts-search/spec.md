@@ -64,6 +64,14 @@ The system SHALL return supplier results in a normalized response model that is 
 - **WHEN** the UI displays an S-LINE result
 - **THEN** it omits the top-level Quantity field and shows offer quantities only in Remains
 
+#### Scenario: Tehnomir returns rests
+- **WHEN** Tehnomir returns `data[].rests[]`
+- **THEN** the backend maps rests to remains, uses the minimum rest price as the result price, and leaves result quantity empty
+
+#### Scenario: Tehnomir rest quantity is lower-bound
+- **WHEN** Tehnomir returns a rest with `quantityType=MORE`
+- **THEN** the UI displays the remain quantity as greater than the returned quantity
+
 #### Scenario: Provider returns empty remains
 - **WHEN** a provider returns an explicit empty remains list
 - **THEN** the backend preserves the empty remains list and does not infer stock from quantity
@@ -102,6 +110,10 @@ The system SHALL display search results with enough detail for a user to compare
 #### Scenario: Result has remains
 - **WHEN** a result includes warehouse remains
 - **THEN** the UI displays the remains separately from quantity
+
+#### Scenario: Result has many remains
+- **WHEN** a result includes more than three remains rows
+- **THEN** the UI displays the first three rows by default and offers a control to show or hide all remains
 
 #### Scenario: Result action layout is consistent
 - **WHEN** any provider result includes a provider action link
