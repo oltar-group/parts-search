@@ -1,7 +1,7 @@
 import { createReadStream, existsSync } from "node:fs";
 import { createServer as createHttpServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadEnvFile, readConfig } from "./config.js";
 import { configureLogger } from "./logger.js";
 import { createProviders } from "./providers/index.js";
@@ -97,7 +97,7 @@ function sendJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   loadEnvFile();
   const config = readConfig();
   configureLogger(config.logging);

@@ -27,6 +27,12 @@ No npm packages are required for the prototype.
 cp .env.example .env
 ```
 
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
 Fill in:
 
 - `UNIQTRADE_EMAIL`
@@ -46,6 +52,9 @@ npm start
 Open `http://localhost:3000`.
 
 Set `HOST=127.0.0.1` if your machine blocks binding to all interfaces.
+
+The same `npm start`, `npm test`, and `npm run check` commands work on Windows,
+macOS, and Linux.
 
 ## Test
 
