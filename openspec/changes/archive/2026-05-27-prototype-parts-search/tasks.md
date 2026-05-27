@@ -50,10 +50,10 @@
 - [x] 5.16 Add Tehnomir provider using token-based `POST /price/search` and normalize `rests[]`.
 - [x] 5.17 Add Autonova-D provider using token auth, article lookup, and client-specific offer details.
 - [x] 5.18 Add rotating file logs for supplier diagnostics.
-- [ ] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
+- [x] 5.5 Manually verify local search with a known article and optional brand using real UniqTrade credentials.
 
 ## 6. Follow-up Options
 
 - [x] 6.1 Document web alternatives that reuse the same backend search endpoint: chat bot, internal API, CLI/admin utility, spreadsheet batch import, and PWA/mobile view.
-- [ ] 6.2 Decide whether an image proxy endpoint is needed after testing supplier image URLs from the browser.
+- [x] 6.2 Decide whether an image proxy endpoint is needed after testing supplier image URLs from the browser.
 - [x] 6.3 Capture the likely next supplier API requirements before adding the second provider.
