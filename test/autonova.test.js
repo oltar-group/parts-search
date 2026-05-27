@@ -87,7 +87,7 @@ test("Autonova provider authenticates and searches article details", async () =>
   ]);
 });
 
-test("Autonova provider does not retry alternate auth fields", async () => {
+test("Autonova provider sends documented username auth field once", async () => {
   const authBodies = [];
   const provider = new AutonovaProvider({
     baseUrl: "https://api.autonovad.ua/stable",
@@ -112,37 +112,12 @@ test("Autonova provider does not retry alternate auth fields", async () => {
   assert.deepEqual(authBodies, [{ username: "user", password: "pass" }]);
 });
 
-test("Autonova provider honors explicit auth login field", async () => {
-  const authBodies = [];
-  const provider = new AutonovaProvider({
-    baseUrl: "https://api.autonovad.ua/stable",
-    login: "user",
-    password: "pass",
-    clientId: "12345",
-    authLoginField: "email",
-    fetchImpl: async (url, options = {}) => {
-      if (url.endsWith("/api/v1/auth/token")) {
-        authBodies.push(JSON.parse(options.body));
-        return jsonResponse(400, { message: "bad credentials" });
-      }
-      throw new Error(`Unexpected URL: ${url}`);
-    }
-  });
-
-  await assert.rejects(
-    () => provider.search({ article: "OC90" }),
-    /bad credentials/
-  );
-  assert.deepEqual(authBodies, [{ email: "user", password: "pass" }]);
-});
-
 test("Autonova provider reports non-JSON auth errors with HTTP status", async () => {
   const provider = new AutonovaProvider({
     baseUrl: "https://api.autonovad.ua/stable",
     login: "user",
     password: "pass",
     clientId: "12345",
-    authLoginField: "username",
     fetchImpl: async (url) => {
       if (url.endsWith("/api/v1/auth/token")) {
         return new Response("<html>Not Found</html>", {

@@ -30,18 +30,14 @@ AUTONOVA_WEB_BASE_URL=https://autonovad.ua
 AUTONOVA_LOGIN=
 AUTONOVA_PASSWORD=
 AUTONOVA_CLIENT_ID=
-AUTONOVA_AUTH_LOGIN_FIELD=username
 AUTONOVA_FILTER_BY_RESULT_CATEGORY=1,2,3
 AUTONOVA_MAX_DETAILS=8
 AUTONOVA_TIMEOUT_MS=20000
 ```
 
 The provider is enabled only when `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, and
-`AUTONOVA_CLIENT_ID` are set.
-
-`AUTONOVA_AUTH_LOGIN_FIELD` controls the login property used in the JSON body.
-The downloaded OpenAPI schema defines `/api/v1/auth/token` as
-`username`/`password`, so the recommended value is `username`:
+`AUTONOVA_CLIENT_ID` are set. The downloaded OpenAPI schema defines
+`/api/v1/auth/token` as `username`/`password`, so the prototype always sends:
 
 ```json
 {
@@ -49,10 +45,6 @@ The downloaded OpenAPI schema defines `/api/v1/auth/token` as
   "password": "..."
 }
 ```
-
-The prototype sends exactly one auth request. Override
-`AUTONOVA_AUTH_LOGIN_FIELD` only if Autonova-D provides a different contract for
-the deployed environment.
 
 ## Authentication
 

@@ -95,7 +95,6 @@ export function readConfig(env = process.env) {
       login: env.AUTONOVA_LOGIN || "",
       password: env.AUTONOVA_PASSWORD || "",
       clientId: env.AUTONOVA_CLIENT_ID || "",
-      authLoginField: env.AUTONOVA_AUTH_LOGIN_FIELD || "username",
       filterByResultCategory: env.AUTONOVA_FILTER_BY_RESULT_CATEGORY || "1,2,3",
       maxDetails: env.AUTONOVA_MAX_DETAILS || "8",
       timeoutMs: parseInt(env.AUTONOVA_TIMEOUT_MS || "20000", 10),

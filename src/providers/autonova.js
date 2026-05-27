@@ -25,7 +25,6 @@ export class AutonovaProvider {
     this.login = options.login || "";
     this.password = options.password || "";
     this.clientId = options.clientId || "";
-    this.authLoginField = options.authLoginField || "username";
     this.filterByResultCategory = options.filterByResultCategory || "1,2,3";
     this.maxDetails = parseInt(options.maxDetails || "8", 10);
     this.timeoutMs = options.timeoutMs || 20000;
@@ -153,7 +152,7 @@ export class AutonovaProvider {
     }
 
     const body = {
-      [this.authLoginField]: this.login,
+      username: this.login,
       password: this.password
     };
 
@@ -171,7 +170,7 @@ export class AutonovaProvider {
       throw await this.errorFromResponse(
         response,
         "auth_failed",
-        `auth base ${this.authBaseUrl}; auth field ${this.authLoginField}`
+        `auth base ${this.authBaseUrl}; auth field username`
       );
     }
 
