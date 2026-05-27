@@ -340,8 +340,12 @@ function renderEmptyRemains(remains) {
   const section = document.createElement("section");
   section.className = "stock-section";
 
+  const header = document.createElement("div");
+  header.className = "stock-header";
+
   const title = document.createElement("h3");
   title.textContent = "Remains";
+  header.append(title);
 
   const message = document.createElement("p");
   message.className = "stock-empty";
@@ -349,7 +353,7 @@ function renderEmptyRemains(remains) {
     ? "No stock remains reported"
     : "Not provided";
 
-  section.append(title, message);
+  section.append(header, message);
   return section;
 }
 
