@@ -9,6 +9,7 @@ const template = document.querySelector("#result-template");
 const imageDialog = document.querySelector("#image-dialog");
 const dialogImage = document.querySelector("#dialog-image");
 const dialogClose = document.querySelector(".dialog-close");
+const buildInfo = document.querySelector("#build-info");
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -16,6 +17,8 @@ imageDialog.addEventListener("click", (event) => {
     imageDialog.close();
   }
 });
+
+loadBuildInfo();
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -68,6 +71,28 @@ form.addEventListener("submit", async (event) => {
     setLoading(false);
   }
 });
+
+async function loadBuildInfo() {
+  if (!buildInfo) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/health");
+    const payload = await response.json();
+    const version = payload?.build?.version;
+    const commit = payload?.build?.commit;
+    const time = payload?.build?.time;
+    const parts = [
+      version ? `v${version}` : "",
+      commit ? commit.slice(0, 7) : "",
+      time || ""
+    ].filter(Boolean);
+    buildInfo.textContent = parts.length ? `Build ${parts.join(" · ")}` : "";
+  } catch {
+    buildInfo.textContent = "";
+  }
+}
 
 function setLoading(isLoading) {
   button.disabled = isLoading;

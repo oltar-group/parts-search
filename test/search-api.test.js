@@ -160,6 +160,31 @@ test("HTTP API returns validation error for empty query", async () => {
   assert.equal(payload.errors[0].code, "empty_query");
 });
 
+test("HTTP health exposes build information", async () => {
+  const handler = createRequestHandler({
+    config: {
+      includeSupplierImages: true,
+      build: {
+        version: "1.2.3",
+        commit: "abcdef123456",
+        time: "2026-05-27T10:00:00Z"
+      }
+    },
+    providers: [provider("mock", "Mock Supplier", [])]
+  });
+
+  const response = await callHandler(handler, "/api/health");
+  const payload = JSON.parse(response.body);
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.deepEqual(payload.build, {
+    version: "1.2.3",
+    commit: "abcdef123456",
+    time: "2026-05-27T10:00:00Z"
+  });
+});
+
 function provider(id, name, results) {
   return {
     id,

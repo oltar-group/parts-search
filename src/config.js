@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+const packageVersion = readPackageVersion();
+
 export function loadEnvFile(filePath = resolve(process.cwd(), ".env")) {
   if (!existsSync(filePath)) {
     return;
@@ -39,6 +41,16 @@ export function readConfig(env = process.env) {
     port: parseInt(env.PORT || "3000", 10),
     includeSupplierImages: env.INCLUDE_SUPPLIER_IMAGES !== "false",
     searchLogLevel: env.SEARCH_LOG_LEVEL || "off",
+    build: {
+      version: env.BUILD_VERSION || env.npm_package_version || packageVersion,
+      commit:
+        env.BUILD_COMMIT ||
+        env.GIT_SHA ||
+        env.RENDER_GIT_COMMIT ||
+        env.VERCEL_GIT_COMMIT_SHA ||
+        "",
+      time: env.BUILD_TIME || ""
+    },
     logging: {
       filePath: env.SEARCH_LOG_FILE || "logs/search.log",
       maxBytes: parseInt(env.SEARCH_LOG_MAX_BYTES || "1048576", 10),
@@ -86,4 +98,15 @@ export function readConfig(env = process.env) {
       logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };
+}
+
+function readPackageVersion() {
+  try {
+    const packageJson = JSON.parse(
+      readFileSync(resolve(process.cwd(), "package.json"), "utf8")
+    );
+    return packageJson.version || "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
 }

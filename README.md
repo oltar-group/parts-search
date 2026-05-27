@@ -56,6 +56,20 @@ Set `HOST=127.0.0.1` if your machine blocks binding to all interfaces.
 The same `npm start`, `npm test`, and `npm run check` commands work on Windows,
 macOS, and Linux.
 
+## Build Version
+
+Production deployments can expose the deployed build through environment
+variables:
+
+```env
+BUILD_VERSION=0.1.0
+BUILD_COMMIT=85c2dc2
+BUILD_TIME=2026-05-27T10:00:00Z
+```
+
+The values are returned by `GET /api/health` and shown at the bottom of the web
+UI. If `BUILD_VERSION` is not set, the app falls back to `package.json` version.
+
 ## Test
 
 ```bash

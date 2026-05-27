@@ -35,6 +35,7 @@ export function createRequestHandler({ config, providers }) {
       if (url.pathname === "/api/health") {
         sendJson(res, 200, {
           ok: true,
+          build: appConfig.build,
           providers: providerList.map((provider) => ({
             id: provider.id,
             name: provider.name,

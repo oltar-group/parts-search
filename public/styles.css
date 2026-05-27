@@ -154,6 +154,13 @@ button.image-wrap:hover {
   color: var(--warn);
 }
 
+.build-info {
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
 .results {
   display: grid;
   gap: 12px;
