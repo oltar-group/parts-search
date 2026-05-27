@@ -58,7 +58,7 @@ test("Autonova provider authenticates and searches article details", async () =>
   const results = await provider.search({ article: "OC90", brand: "MAHLE" });
   const authBody = JSON.parse(calls[0].options.body);
 
-  assert.deepEqual(authBody, { login: "user", password: "pass" });
+  assert.deepEqual(authBody, { username: "user", password: "pass" });
   assert.equal(results.length, 1);
   assert.equal(results[0].providerId, "autonova");
   assert.equal(results[0].externalId, "77");
@@ -69,14 +69,95 @@ test("Autonova provider authenticates and searches article details", async () =>
       storageId: null,
       storageName: "Kyiv",
       quantity: 4,
+      quantityLabel: "",
       price: 92.5,
       currency: "UAH",
       supplierId: 5,
       deliveryType: "",
       deliveryDate: "",
+      deliveryDays: null,
+      deliveryTerm: "",
       resultCategory: null
     }
   ]);
+});
+
+test("Autonova provider does not retry alternate auth fields", async () => {
+  const authBodies = [];
+  const provider = new AutonovaProvider({
+    baseUrl: "https://api.autonovad.ua/stable",
+    login: "user",
+    password: "pass",
+    clientId: "12345",
+    fetchImpl: async (url, options = {}) => {
+      if (url.endsWith("/api/v1/auth/token")) {
+        const body = JSON.parse(options.body);
+        authBodies.push(body);
+        return jsonResponse(401, { message: "Unauthorized" });
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    }
+  });
+
+  await assert.rejects(
+    () => provider.search({ article: "OC90" }),
+    /Unauthorized/
+  );
+
+  assert.deepEqual(authBodies, [{ username: "user", password: "pass" }]);
+});
+
+test("Autonova provider honors explicit auth login field", async () => {
+  const authBodies = [];
+  const provider = new AutonovaProvider({
+    baseUrl: "https://api.autonovad.ua/stable",
+    login: "user",
+    password: "pass",
+    clientId: "12345",
+    authLoginField: "email",
+    fetchImpl: async (url, options = {}) => {
+      if (url.endsWith("/api/v1/auth/token")) {
+        authBodies.push(JSON.parse(options.body));
+        return jsonResponse(400, { message: "bad credentials" });
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    }
+  });
+
+  await assert.rejects(
+    () => provider.search({ article: "OC90" }),
+    /bad credentials/
+  );
+  assert.deepEqual(authBodies, [{ email: "user", password: "pass" }]);
+});
+
+test("Autonova provider reports non-JSON auth errors with HTTP status", async () => {
+  const provider = new AutonovaProvider({
+    baseUrl: "https://api.autonovad.ua/stable",
+    login: "user",
+    password: "pass",
+    clientId: "12345",
+    authLoginField: "username",
+    fetchImpl: async (url) => {
+      if (url.endsWith("/api/v1/auth/token")) {
+        return new Response("<html>Not Found</html>", {
+          status: 404,
+          headers: { "Content-Type": "text/html" }
+        });
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    }
+  });
+
+  await assert.rejects(
+    () => provider.search({ article: "OC90" }),
+    (error) => {
+      assert.equal(error.code, "auth_failed");
+      assert.match(error.message, /HTTP 404/);
+      assert.match(error.message, /Not Found/);
+      return true;
+    }
+  );
 });
 
 test("Autonova provider filters article rows by brand before details", async () => {
@@ -144,12 +225,80 @@ test("normalizes Autonova article and detail rows", () => {
       storageId: 10,
       storageName: "Lviv",
       quantity: 2,
+      quantityLabel: "",
       price: 91,
       currency: "UAH",
       supplierId: null,
       deliveryType: "",
       deliveryDate: "",
+      deliveryDays: null,
+      deliveryTerm: "",
       resultCategory: null
+    }
+  ]);
+});
+
+test("normalizes documented Autonova OpenAPI response shapes", () => {
+  const articleResults = normalizeAutonovaArticleSearch({
+    success: "true",
+    data: {
+      Total: 1,
+      WareListItem: [
+        {
+          Id: "111210_116",
+          WareNumber: "111210",
+          Name: "Трос",
+          ProducerName: "Kolbenschmidt",
+          HasImage: true,
+          ImageId: "https://cdn.example/111210.jpg"
+        }
+      ]
+    }
+  });
+  const detailResults = normalizeAutonovaDetailSearch({
+    success: "true",
+    data: [
+      {
+        Id: "111210_116",
+        WareNumber: "111210",
+        Name: "Трос",
+        ProducerName: "Kolbenschmidt",
+        SupplierWarehouseId: "351132",
+        SupplierWarehouseName: "Main",
+        AvailableQnt: 99,
+        AvailableQntstr: "99",
+        ClientPrice: 2356.52,
+        DeliveryDays: 29,
+        DeliveryTerm: "14:00",
+        SupplierId: "36546541",
+        ResultCategory: 3,
+        ImageUrl: "https://cdn.example/offer.jpg"
+      }
+    ]
+  });
+
+  assert.equal(articleResults.length, 1);
+  assert.equal(articleResults[0].externalId, "111210_116");
+  assert.equal(articleResults[0].article, "111210");
+  assert.equal(articleResults[0].brand, "Kolbenschmidt");
+  assert.equal(articleResults[0].hasImage, true);
+  assert.equal(articleResults[0].images[0].value, "https://cdn.example/111210.jpg");
+
+  assert.equal(detailResults[0].price.value, 2356.52);
+  assert.deepEqual(detailResults[0].remains, [
+    {
+      storageId: "351132",
+      storageName: "Main",
+      quantity: 99,
+      quantityLabel: "99",
+      price: 2356.52,
+      currency: "UAH",
+      supplierId: "36546541",
+      deliveryType: "",
+      deliveryDate: "",
+      deliveryDays: 29,
+      deliveryTerm: "14:00",
+      resultCategory: 3
     }
   ]);
 });

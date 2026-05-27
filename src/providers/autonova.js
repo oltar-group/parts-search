@@ -16,13 +16,16 @@ export class AutonovaProvider {
     this.baseUrl = trimTrailingSlash(
       options.baseUrl || DEFAULT_PROVIDER.apiBaseUrl
     );
+    this.authBaseUrl = trimTrailingSlash(
+      options.authBaseUrl || options.baseUrl || DEFAULT_PROVIDER.apiBaseUrl
+    );
     this.webBaseUrl = trimTrailingSlash(
       options.webBaseUrl || DEFAULT_PROVIDER.webBaseUrl
     );
     this.login = options.login || "";
     this.password = options.password || "";
     this.clientId = options.clientId || "";
-    this.authLoginField = options.authLoginField || "login";
+    this.authLoginField = options.authLoginField || "username";
     this.filterByResultCategory = options.filterByResultCategory || "1,2,3";
     this.maxDetails = parseInt(options.maxDetails || "8", 10);
     this.timeoutMs = options.timeoutMs || 20000;
@@ -155,6 +158,7 @@ export class AutonovaProvider {
     };
 
     const response = await this.request("/api/v1/auth/token", {
+      baseUrl: this.authBaseUrl,
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -164,7 +168,11 @@ export class AutonovaProvider {
     });
 
     if (!response.ok) {
-      throw await this.errorFromResponse(response, "auth_failed");
+      throw await this.errorFromResponse(
+        response,
+        "auth_failed",
+        `auth base ${this.authBaseUrl}; auth field ${this.authLoginField}`
+      );
     }
 
     this.setAuthPayload(await safeJson(response));
@@ -180,7 +188,10 @@ export class AutonovaProvider {
 
     const response = await this.request(
       `/api/v1/auth/token/refresh/${encodeURIComponent(this.refreshToken)}`,
-      { headers: { Accept: "application/json" } }
+      {
+        baseUrl: this.authBaseUrl,
+        headers: { Accept: "application/json" }
+      }
     );
 
     if (!response.ok) {
@@ -222,10 +233,13 @@ export class AutonovaProvider {
   async request(path, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    const baseUrl = options.baseUrl || this.baseUrl;
+    const requestOptions = { ...options };
+    delete requestOptions.baseUrl;
 
     try {
-      return await this.fetchImpl(`${this.baseUrl}${path}`, {
-        ...options,
+      return await this.fetchImpl(`${baseUrl}${path}`, {
+        ...requestOptions,
         signal: controller.signal
       });
     } catch (error) {
@@ -243,10 +257,15 @@ export class AutonovaProvider {
     }
   }
 
-  async errorFromResponse(response, fallbackCode = "provider_error") {
-    const payload = await safeJson(response);
+  async errorFromResponse(response, fallbackCode = "provider_error", context = "") {
+    const { payload, text } = await readJsonOrText(response);
     const message =
-      pickErrorMessage(payload) || `Autonova-D returned HTTP ${response.status}`;
+      pickErrorMessage(payload) ||
+      [
+        `Autonova-D returned HTTP ${response.status}`,
+        context,
+        summarizeResponseText(text)
+      ].filter(Boolean).join(": ");
     const code =
       response.status === 401 || response.status === 403
         ? "auth_failed"
@@ -331,7 +350,9 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
       "manufacturer",
       "Manufacturer",
       "wareManufacturer",
-      "WareManufacturer"
+      "WareManufacturer",
+      "supplierBrandName",
+      "SupplierBrandName"
     ]) || fallback.brand || "";
   const article =
     pickString(item, [
@@ -343,6 +364,10 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
       "ArticleId",
       "wareArticle",
       "WareArticle",
+      "wareNumber",
+      "WareNumber",
+      "supplierWareNumber",
+      "SupplierWareNumber",
       "code",
       "Code",
       "partCode",
@@ -356,6 +381,8 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
       "WareName",
       "partName",
       "PartName",
+      "supplierWareName",
+      "SupplierWareName",
       "description",
       "Description",
       "descriptionUa",
@@ -378,6 +405,7 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
     ]) || fallback.externalId || `${article || "part"}-${index}`
   );
   const remains = normalizeRemains(item);
+  const images = normalizeImagesFromItem(item);
 
   return {
     providerId: provider.providerId || provider.id || DEFAULT_PROVIDER.id,
@@ -392,9 +420,16 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
     price: normalizePrice(item, remains),
     quantity: null,
     remains,
-    images: normalizeImages(pickArray(item, ["images", "Images"])),
-    hasImage: normalizeImages(pickArray(item, ["images", "Images"])).length > 0,
-    multiplicity: pickNumber(item, ["saleQnt", "SaleQnt", "multiplicity"]),
+    images,
+    hasImage: images.length > 0 || Boolean(item?.hasImage || item?.HasImage),
+    multiplicity: pickNumber(item, [
+      "useMultipleQnt",
+      "UseMultipleQnt",
+      "multiplicity",
+      "Multiplicity",
+      "saleQnt",
+      "SaleQnt"
+    ]),
     rawUrl: "",
     providerUrl: "",
     apiDetailUrl: "",
@@ -433,7 +468,8 @@ function normalizeRemains(item) {
     "warehouses",
     "Warehouses",
     "result",
-    "Result"
+    "Result",
+    "WareListItem"
   ]);
 
   if (direct) {
@@ -449,11 +485,20 @@ function normalizeRemains(item) {
 
 function normalizeRemainRow(row) {
   return {
-    storageId: pickValue(row, ["warehouseId", "WarehouseId", "storeId", "StoreId"]),
+    storageId: pickValue(row, [
+      "warehouseId",
+      "WarehouseId",
+      "supplierWarehouseId",
+      "SupplierWarehouseId",
+      "storeId",
+      "StoreId"
+    ]),
     storageName:
       pickString(row, [
         "warehouseName",
         "WarehouseName",
+        "supplierWarehouseName",
+        "SupplierWarehouseName",
         "storeName",
         "StoreName",
         "affiliateName",
@@ -470,14 +515,21 @@ function normalizeRemainRow(row) {
       "WareQnt",
       "availableQuantity",
       "AvailableQuantity",
+      "availableQnt",
+      "AvailableQnt",
       "stock",
       "Stock"
     ]),
+    quantityLabel: pickString(row, ["availableQntstr", "AvailableQntstr"]),
     price: pickNumber(row, [
       "price",
       "Price",
       "clientPrice",
       "ClientPrice",
+      "clientSalePrice",
+      "ClientSalePrice",
+      "priceBeforeSale",
+      "PriceBeforeSale",
       "warePrice",
       "WarePrice"
     ]),
@@ -485,6 +537,8 @@ function normalizeRemainRow(row) {
     supplierId: pickValue(row, ["supplierId", "SupplierId", "supplierUid", "SupplierUid"]),
     deliveryType: pickString(row, ["deliveryType", "DeliveryType"]),
     deliveryDate: pickString(row, ["deliveryDate", "DeliveryDate"]),
+    deliveryDays: pickNumber(row, ["deliveryDays", "DeliveryDays"]),
+    deliveryTerm: pickString(row, ["deliveryTerm", "DeliveryTerm"]),
     resultCategory: pickValue(row, ["resultCategory", "ResultCategory"])
   };
 }
@@ -495,6 +549,10 @@ function normalizePrice(item, remains) {
     "Price",
     "clientPrice",
     "ClientPrice",
+    "clientSalePrice",
+    "ClientSalePrice",
+    "priceBeforeSale",
+    "PriceBeforeSale",
     "warePrice",
     "WarePrice"
   ]);
@@ -519,6 +577,21 @@ function normalizePrice(item, remains) {
   };
 }
 
+function normalizeImagesFromItem(item) {
+  const images = normalizeImages(pickArray(item, ["images", "Images"]));
+  const directUrls = [
+    pickString(item, ["imageUrl", "ImageUrl"]),
+    pickString(item, ["imageId", "ImageId"])
+  ].filter((url) => url && isHttpUrl(url));
+  const imageCodes = pickArray(item, ["imageCodes", "ImageCodes"]) || [];
+
+  return [
+    ...images,
+    ...directUrls.map((url) => imageFromUrl(url)),
+    ...normalizeImages(imageCodes.filter(isHttpUrl))
+  ];
+}
+
 function normalizeImages(images) {
   if (!Array.isArray(images)) {
     return [];
@@ -533,14 +606,18 @@ function normalizeImages(images) {
       if (!url) {
         return null;
       }
-      return {
-        type: "image",
-        value: url,
-        thumbnail: url,
-        fullImagePath: url
-      };
+      return imageFromUrl(url);
     })
     .filter(Boolean);
+}
+
+function imageFromUrl(url) {
+  return {
+    type: "image",
+    value: url,
+    thumbnail: url,
+    fullImagePath: url
+  };
 }
 
 function extractRows(payload) {
@@ -549,8 +626,6 @@ function extractRows(payload) {
   }
 
   for (const key of [
-    "data",
-    "Data",
     "items",
     "Items",
     "results",
@@ -560,10 +635,21 @@ function extractRows(payload) {
     "parts",
     "Parts",
     "content",
-    "Content"
+    "Content",
+    "wareListItem",
+    "WareListItem"
   ]) {
     if (Array.isArray(payload?.[key])) {
       return payload[key];
+    }
+  }
+
+  for (const key of ["data", "Data", "response", "Response"]) {
+    if (payload?.[key] && typeof payload[key] === "object") {
+      const nested = extractRows(payload[key]);
+      if (nested.length > 0) {
+        return nested;
+      }
     }
   }
 
@@ -580,10 +666,14 @@ function looksLikePart(value) {
       value?.PartId ||
       value?.wareId ||
       value?.WareId ||
+      value?.id ||
+      value?.Id ||
       value?.article ||
       value?.Article ||
       value?.wareArticle ||
-      value?.WareArticle
+      value?.WareArticle ||
+      value?.wareNumber ||
+      value?.WareNumber
   );
 }
 
@@ -595,8 +685,12 @@ function looksLikeRemain(value) {
       value?.Quantity ||
       value?.qnt ||
       value?.Qnt ||
+      value?.availableQnt ||
+      value?.AvailableQnt ||
       value?.clientPrice ||
-      value?.ClientPrice
+      value?.ClientPrice ||
+      value?.supplierWarehouseId ||
+      value?.SupplierWarehouseId
   );
 }
 
@@ -654,15 +748,26 @@ function pickValue(item, keys) {
 }
 
 function pickErrorMessage(payload) {
-  return (
+  const message =
     payload?.message ||
     payload?.Message ||
     payload?.error ||
     payload?.Error ||
     payload?.errors ||
     payload?.Errors ||
-    ""
-  );
+    "";
+
+  if (!message) {
+    return "";
+  }
+  if (typeof message === "string") {
+    return message;
+  }
+  return JSON.stringify(redactSensitive(message));
+}
+
+function isHttpUrl(value) {
+  return /^https?:\/\//i.test(String(value || ""));
 }
 
 function trimTrailingSlash(value) {
@@ -670,16 +775,45 @@ function trimTrailingSlash(value) {
 }
 
 async function safeJson(response) {
-  const text = await response.text();
+  const { payload, text } = await readJsonOrText(response);
   if (!text) {
     return null;
   }
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new ProviderError("invalid_response", "Provider returned invalid JSON", {
-      providerId: DEFAULT_PROVIDER.id
-    });
+  if (payload !== null) {
+    return payload;
   }
+
+  throw new ProviderError(
+    "invalid_response",
+    [
+      `Provider returned invalid JSON from HTTP ${response.status}`,
+      summarizeResponseText(text)
+    ].filter(Boolean).join(": "),
+    {
+      providerId: DEFAULT_PROVIDER.id,
+      status: response.status
+    }
+  );
+}
+
+async function readJsonOrText(response) {
+  const text = await response.text();
+  if (!text) {
+    return { payload: null, text: "" };
+  }
+
+  try {
+    return { payload: JSON.parse(text), text };
+  } catch {
+    return { payload: null, text };
+  }
+}
+
+function summarizeResponseText(text) {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return "";
+  }
+  return redactSensitive(normalized.slice(0, 180));
 }

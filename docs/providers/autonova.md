@@ -3,6 +3,7 @@
 Source contract:
 
 - [Autonova-D API instruction](autonova-api.md)
+- [Downloaded OpenAPI schema](autonova.openapi.json)
 - Swagger UI: `https://api.autonovad.ua/webjars/swagger-ui/index.html#/`
 
 ## API Style
@@ -15,18 +16,21 @@ The documentation describes two environments:
 | Test | `https://api.autonovad.ua/dev` |
 | Production | `https://api.autonovad.ua/stable` |
 
-The prototype defaults to the production GET-capable base URL and can be pointed
-to `/dev` through `AUTONOVA_API_BASE_URL`.
+The downloaded OpenAPI schema lists `https://api.autonovad.ua/dev` as its
+server. The prototype defaults to the production GET-capable base URL and can be
+pointed to `/dev` through `AUTONOVA_API_BASE_URL` and
+`AUTONOVA_AUTH_BASE_URL`.
 
 ## Prototype Configuration
 
 ```env
 AUTONOVA_API_BASE_URL=https://api.autonovad.ua/stable
+AUTONOVA_AUTH_BASE_URL=https://api.autonovad.ua/stable
 AUTONOVA_WEB_BASE_URL=https://autonovad.ua
 AUTONOVA_LOGIN=
 AUTONOVA_PASSWORD=
 AUTONOVA_CLIENT_ID=
-AUTONOVA_AUTH_LOGIN_FIELD=login
+AUTONOVA_AUTH_LOGIN_FIELD=username
 AUTONOVA_FILTER_BY_RESULT_CATEGORY=1,2,3
 AUTONOVA_MAX_DETAILS=8
 AUTONOVA_TIMEOUT_MS=20000
@@ -35,19 +39,20 @@ AUTONOVA_TIMEOUT_MS=20000
 The provider is enabled only when `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, and
 `AUTONOVA_CLIENT_ID` are set.
 
-`AUTONOVA_AUTH_LOGIN_FIELD` exists because the instruction says login/password
-are used, but does not show the exact JSON request body for `/auth/token`.
-The default request body is:
+`AUTONOVA_AUTH_LOGIN_FIELD` controls the login property used in the JSON body.
+The downloaded OpenAPI schema defines `/api/v1/auth/token` as
+`username`/`password`, so the recommended value is `username`:
 
 ```json
 {
-  "login": "...",
+  "username": "...",
   "password": "..."
 }
 ```
 
-If Swagger shows a different field name, set `AUTONOVA_AUTH_LOGIN_FIELD`, for
-example `username` or `email`.
+The prototype sends exactly one auth request. Override
+`AUTONOVA_AUTH_LOGIN_FIELD` only if Autonova-D provides a different contract for
+the deployed environment.
 
 ## Authentication
 
@@ -100,13 +105,13 @@ accepts free-text brand values.
 | `providerId` | `autonova` |
 | `providerName` | `Autonova-D` |
 | `providerHomeUrl` | `AUTONOVA_WEB_BASE_URL` |
-| `externalId` | `partId`, `wareId`, `id` |
-| `brand` / `displayBrand` | `brand`, `brandName`, `producerName`, `manufacturer`, `wareManufacturer` |
-| `article` | `article`, `articleId`, `wareArticle`, `code`, `partCode` |
-| `title` | `name`, `wareName`, `partName`, `description` |
+| `externalId` | `Id`, `partId`, `wareId`, `id` |
+| `brand` / `displayBrand` | `ProducerName`, `SupplierBrandName`, `brand`, `brandName`, `producerName`, `manufacturer`, `wareManufacturer` |
+| `article` | `WareNumber`, `SupplierWareNumber`, `article`, `articleId`, `wareArticle`, `code`, `partCode` |
+| `title` | `Name`, `SupplierWareName`, `name`, `wareName`, `partName`, `description` |
 | `price` | direct price fields or minimum remains price |
 | `quantity` | `null`; availability is represented by `remains` |
-| `remains[]` | normalized detail rows, offers, stocks, warehouses, or rests |
+| `remains[]` | normalized `WareOfferDto` rows, offers, stocks, warehouses, or rests |
 | `providerUrl` | empty until a verified web product/search URL is known |
 | `raw` | redacted source item |
 
@@ -114,20 +119,34 @@ Remains mapping:
 
 | Normalized remains field | Autonova-D source candidates |
 | --- | --- |
-| `storageId` | `warehouseId`, `storeId` |
-| `storageName` | `warehouseName`, `storeName`, `affiliateName`, `resultCategory` |
-| `quantity` | `quantity`, `qnt`, `wareQnt`, `availableQuantity`, `stock` |
-| `price` | `price`, `clientPrice`, `warePrice` |
+| `storageId` | `SupplierWarehouseId`, `warehouseId`, `storeId` |
+| `storageName` | `SupplierWarehouseName`, `warehouseName`, `storeName`, `affiliateName`, `resultCategory` |
+| `quantity` | `AvailableQnt`, `quantity`, `qnt`, `wareQnt`, `availableQuantity`, `stock` |
+| `quantityLabel` | `AvailableQntstr` |
+| `price` | `ClientPrice`, `ClientSalePrice`, `PriceBeforeSale`, `price`, `warePrice` |
 | `currency` | `currency`, defaults to `UAH` |
-| `supplierId` | `supplierId`, `supplierUid` |
+| `supplierId` | `SupplierId`, `supplierId`, `supplierUid` |
 | `deliveryType` | `deliveryType` |
 | `deliveryDate` | `deliveryDate` |
-| `resultCategory` | `resultCategory` |
+| `deliveryDays` | `DeliveryDays` |
+| `deliveryTerm` | `DeliveryTerm` |
+| `resultCategory` | `ResultCategory`, `resultCategory` |
+
+Documented response shapes:
+
+- `GET /api/v1/wares/article/{articleId}` returns
+  `data.WareListItem[]` with `Id`, `WareNumber`, `Name`, `ProducerName`,
+  `HasImage`, and `ImageId`.
+- `GET /api/v1/wares/clients/{clientId}/parts/{partId}` returns `data[]` with
+  offer rows such as `AvailableQnt`, `AvailableQntstr`, `ClientPrice`,
+  `SupplierWarehouseId`, `SupplierWarehouseName`, `SupplierId`,
+  `DeliveryDays`, `DeliveryTerm`, and `ResultCategory`.
 
 ## Notes
 
-- The public instruction does not include exact response schemas, so the mapper
-  accepts several likely field names from the documented terms.
+- The public instruction did not include exact response schemas, so the mapper
+  keeps several legacy candidate field names in addition to the downloaded
+  OpenAPI fields.
 - `FilterByResultCategory=1,2,3` requests local branch, other branches, and
   supplier offers according to the instruction.
 - The provider does not place orders; order endpoints are documented for later.
