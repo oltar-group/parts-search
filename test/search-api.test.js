@@ -94,7 +94,7 @@ test("search service returns partial results when one provider fails", async () 
 test("search service logs summary when enabled", async () => {
   const messages = [];
   const originalInfo = console.info;
-  console.info = (message) => messages.push(JSON.parse(message));
+  console.info = (message) => messages.push(message);
 
   try {
     await searchParts({
@@ -115,9 +115,9 @@ test("search service logs summary when enabled", async () => {
   }
 
   assert.equal(messages.length, 1);
-  assert.equal(messages[0].event, "parts.search_response");
-  assert.equal(messages[0].resultCount, 1);
-  assert.equal(JSON.stringify(messages).includes("secret-token"), false);
+  assert.match(messages[0], /^parts\.search_response /);
+  assert.match(messages[0], /results=1/);
+  assert.equal(messages[0].includes("secret-token"), false);
 });
 
 test("HTTP API serves successful search and does not expose secrets", async () => {

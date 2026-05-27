@@ -94,7 +94,10 @@ openspec validate prototype-parts-search
 
 ## Search Logging
 
-Set `SEARCH_LOG_LEVEL=summary` to print supplier result summaries to the server console and `SEARCH_LOG_FILE`. Use `SEARCH_LOG_LEVEL=raw` to also print redacted raw supplier responses.
+Set `SEARCH_LOG_LEVEL=summary` to log supplier result summaries. Use
+`SEARCH_LOG_LEVEL=raw` to also log redacted raw supplier responses. The server
+console prints compact one-line events; `SEARCH_LOG_FILE` keeps the full
+formatted JSON payloads for investigation.
 
 File logging rotates by size. By default it keeps 5 files total: `logs/search.log` plus `logs/search.log.1` through `logs/search.log.4`.
 

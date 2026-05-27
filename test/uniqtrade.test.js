@@ -210,7 +210,7 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
 test("UniqTrade provider logs raw response and summary when enabled", async () => {
   const messages = [];
   const originalInfo = console.info;
-  console.info = (message) => messages.push(JSON.parse(message));
+  console.info = (message) => messages.push(message);
 
   const provider = new UniqTradeProvider({
     baseUrl: "https://order24-api.utr.ua",
@@ -247,11 +247,12 @@ test("UniqTrade provider logs raw response and summary when enabled", async () =
   }
 
   assert.deepEqual(
-    messages.map((message) => message.event),
+    messages.map((message) => message.split(" ")[0]),
     ["supplier.raw_response", "supplier.search_summary"]
   );
-  assert.equal(JSON.stringify(messages).includes("supplier-token"), false);
-  assert.equal(messages[1].results[0].quantity, 0);
+  assert.equal(messages.join("\n").includes("supplier-token"), false);
+  assert.match(messages[1], /count=1/);
+  assert.match(messages[1], /MAHLE\/OC90/);
 });
 
 test("UniqTrade provider reports timeout duration", async () => {
