@@ -431,7 +431,7 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
       "SaleQnt"
     ]),
     rawUrl: "",
-    providerUrl: "",
+    providerUrl: buildAutonovaSearchUrl(provider.webBaseUrl, { article }),
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
@@ -453,6 +453,13 @@ function mergeAutonovaResults(base, details) {
     price: cheapest?.price || base.price,
     remains
   };
+}
+
+export function buildAutonovaSearchUrl(baseUrl, { article }) {
+  const params = new URLSearchParams();
+  params.set("query", article || "");
+
+  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/ru/search-products/?${params}`;
 }
 
 function normalizeRemains(item) {

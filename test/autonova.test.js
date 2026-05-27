@@ -4,6 +4,7 @@ import { readConfig } from "../src/config.js";
 import { createProviders } from "../src/providers/index.js";
 import {
   AutonovaProvider,
+  buildAutonovaSearchUrl,
   normalizeAutonovaArticleSearch,
   normalizeAutonovaDetailSearch
 } from "../src/providers/autonova.js";
@@ -63,6 +64,10 @@ test("Autonova provider authenticates and searches article details", async () =>
   assert.equal(results[0].providerId, "autonova");
   assert.equal(results[0].externalId, "77");
   assert.equal(results[0].brand, "MAHLE");
+  assert.equal(
+    results[0].providerUrl,
+    "https://autonovad.ua/ru/search-products/?query=OC90"
+  );
   assert.deepEqual(results[0].price, { value: 92.5, currency: "UAH" });
   assert.deepEqual(results[0].remains, [
     {
@@ -301,6 +306,13 @@ test("normalizes documented Autonova OpenAPI response shapes", () => {
       resultCategory: 3
     }
   ]);
+});
+
+test("builds Autonova provider search URL", () => {
+  assert.equal(
+    buildAutonovaSearchUrl("https://autonovad.ua", { article: "038198119A" }),
+    "https://autonovad.ua/ru/search-products/?query=038198119A"
+  );
 });
 
 test("registers Autonova provider only when credentials and client id are configured", () => {

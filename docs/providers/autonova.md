@@ -112,7 +112,7 @@ accepts free-text brand values.
 | `price` | direct price fields or minimum remains price |
 | `quantity` | `null`; availability is represented by `remains` |
 | `remains[]` | normalized `WareOfferDto` rows, offers, stocks, warehouses, or rests |
-| `providerUrl` | empty until a verified web product/search URL is known |
+| `providerUrl` | `AUTONOVA_WEB_BASE_URL/ru/search-products/?query={article}` |
 | `raw` | redacted source item |
 
 Remains mapping:
