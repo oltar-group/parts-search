@@ -1,0 +1,7 @@
+.git
+.env
+logs
+node_modules
+npm-debug.log*
+Dockerfile
+compose.yaml

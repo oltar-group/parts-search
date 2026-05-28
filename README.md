@@ -56,6 +56,48 @@ Set `HOST=127.0.0.1` if your machine blocks binding to all interfaces.
 The same `npm start`, `npm test`, and `npm run check` commands work on Windows,
 macOS, and Linux.
 
+## Docker
+
+Docker is useful on Windows servers when you want one repeatable runtime with
+Node.js, environment variables, port mapping, restart policy, and log volume
+handled outside the host OS.
+
+After creating `.env`, run with Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+Open `http://localhost:3000`.
+
+The Compose file forces `HOST=0.0.0.0` inside the container so published ports
+work even if `.env` contains `HOST=127.0.0.1`. Search logs are written to the
+host `./logs` directory.
+
+Without Compose on macOS/Linux:
+
+```bash
+docker build -t parts-search-prototype .
+docker run -d --name parts-search \
+  --env-file .env \
+  -e HOST=0.0.0.0 \
+  -p 3000:3000 \
+  -v "$(pwd)/logs:/app/logs" \
+  parts-search-prototype
+```
+
+Without Compose on Windows PowerShell:
+
+```powershell
+docker build -t parts-search-prototype .
+docker run -d --name parts-search `
+  --env-file .env `
+  -e HOST=0.0.0.0 `
+  -p 3000:3000 `
+  -v "${PWD}/logs:/app/logs" `
+  parts-search-prototype
+```
+
 ## Build Version
 
 Production deployments can expose the deployed build through environment
