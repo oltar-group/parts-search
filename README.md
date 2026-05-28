@@ -72,7 +72,9 @@ Open `http://localhost:3000`.
 
 The Compose file forces `HOST=0.0.0.0` inside the container so published ports
 work even if `.env` contains `HOST=127.0.0.1`. Search logs are written to the
-host `./logs` directory.
+host `./logs` directory. The container entrypoint fixes `/app/logs` ownership at
+startup and then runs the Node.js process as the non-root `node` user, so a fresh
+checkout with no existing `logs/` directory still works on Linux.
 
 Without Compose on macOS/Linux:
 
