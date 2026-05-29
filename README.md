@@ -10,6 +10,7 @@ Small full-stack prototype for searching spare parts through supplier APIs. The 
 - Enables S-LINE as a second provider when `SLINE_API_KEY` is configured.
 - Enables Tehnomir as another provider when `TEHNOMIR_API_TOKEN` is configured.
 - Enables Autonova-D when `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, and `AUTONOVA_CLIENT_ID` are configured.
+- Enables OptionAuto when `OPTIONAUTO_API_KEY` and `OPTIONAUTO_CLIENT_ID` are configured.
 - Calls UniqTrade search with `info=1` so supplier image metadata can be shown.
 - Normalizes provider responses into one result model.
 - Handles loading, empty results, provider errors, auth errors, and missing images.
@@ -42,6 +43,7 @@ Fill in:
 - `SLINE_API_KEY` to enable S-LINE search
 - `TEHNOMIR_API_TOKEN` to enable Tehnomir search
 - `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, and `AUTONOVA_CLIENT_ID` to enable Autonova-D search
+- `OPTIONAUTO_API_KEY` and `OPTIONAUTO_CLIENT_ID` to enable OptionAuto search
 
 Then run:
 
@@ -162,6 +164,9 @@ Useful when a result appears in API search but cannot be bought in the provider 
 - [Tehnomir OpenAPI contract](docs/providers/tehnomir.openapi.json)
 - [Autonova-D provider notes](docs/providers/autonova.md)
 - [Autonova-D API instruction](docs/providers/autonova-api.md)
+- [OptionAuto provider notes](docs/providers/optionauto.md)
+- [OptionAuto Vortex API DOCX](docs/providers/optionauto-api.docx)
+- [OptionAuto redacted PHP client example](docs/providers/optionauto-client-example.php)
 
 ## API
 

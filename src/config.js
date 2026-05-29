@@ -99,6 +99,15 @@ export function readConfig(env = process.env) {
       maxDetails: env.AUTONOVA_MAX_DETAILS || "8",
       timeoutMs: parseInt(env.AUTONOVA_TIMEOUT_MS || "20000", 10),
       logLevel: env.SEARCH_LOG_LEVEL || "off"
+    },
+    optionauto: {
+      baseUrl: env.OPTIONAUTO_API_BASE_URL || "https://t2.dev.vortex-services.com/front_api",
+      webBaseUrl: env.OPTIONAUTO_WEB_BASE_URL || "https://www.optionauto.com.ua",
+      apiKey: env.OPTIONAUTO_API_KEY || "",
+      clientId: env.OPTIONAUTO_CLIENT_ID || "",
+      maxDetails: env.OPTIONAUTO_MAX_DETAILS || "8",
+      timeoutMs: parseInt(env.OPTIONAUTO_TIMEOUT_MS || "20000", 10),
+      logLevel: env.SEARCH_LOG_LEVEL || "off"
     }
   };
 }
