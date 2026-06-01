@@ -22,6 +22,10 @@ Small full-stack prototype for searching spare parts through supplier APIs. The 
 
 No npm packages are required for the prototype.
 
+For server deployment, Docker Compose is the recommended runtime. See
+[Deploy on Ubuntu](docs/deploy-ubuntu.md) for the full Git-based deployment
+runbook.
+
 ## Setup
 
 ```bash
@@ -60,9 +64,26 @@ macOS, and Linux.
 
 ## Docker
 
-Docker is useful on Windows servers when you want one repeatable runtime with
+Docker is the recommended server runtime when you want one repeatable setup with
 Node.js, environment variables, port mapping, restart policy, and log volume
 handled outside the host OS.
+
+For a clean Ubuntu server, use the step-by-step deployment runbook:
+[Deploy on Ubuntu](docs/deploy-ubuntu.md).
+
+Before using the default external port, check whether `3000` is already busy:
+
+```bash
+sudo ss -ltnp | grep ':3000'
+```
+
+If it is busy, set another external port such as `8080` in `.env`:
+
+```env
+HOST_PORT=8080
+```
+
+Keep `PORT=3000`; that is the internal application port inside the container.
 
 After creating `.env`, run with Docker Compose:
 
@@ -70,7 +91,7 @@ After creating `.env`, run with Docker Compose:
 docker compose up -d --build
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`, or `http://localhost:8080` if `HOST_PORT=8080`.
 
 The Compose file forces `HOST=0.0.0.0` inside the container so published ports
 work even if `.env` contains `HOST=127.0.0.1`. Search logs are written to the
@@ -90,6 +111,8 @@ docker run -d --name parts-search \
   parts-search-prototype
 ```
 
+Use `-p 8080:3000` instead if host port `3000` is busy.
+
 Without Compose on Windows PowerShell:
 
 ```powershell
@@ -101,6 +124,8 @@ docker run -d --name parts-search `
   -v "${PWD}/logs:/app/logs" `
   parts-search-prototype
 ```
+
+Use `-p 8080:3000` instead if host port `3000` is busy.
 
 ## Build Version
 
@@ -125,17 +150,17 @@ npm run check
 
 ## Specification
 
-The OpenSpec change is included in this repository so the prototype can move to GitHub as a self-contained project:
+OpenSpec files are included in this repository:
 
-- [Proposal](openspec/changes/prototype-parts-search/proposal.md)
-- [Design](openspec/changes/prototype-parts-search/design.md)
-- [Parts search spec](openspec/changes/prototype-parts-search/specs/parts-search/spec.md)
-- [Implementation tasks](openspec/changes/prototype-parts-search/tasks.md)
+- [Current parts search spec](openspec/specs/parts-search/spec.md)
+- [Archived proposal](openspec/changes/archive/2026-05-27-prototype-parts-search/proposal.md)
+- [Archived design](openspec/changes/archive/2026-05-27-prototype-parts-search/design.md)
+- [Archived implementation tasks](openspec/changes/archive/2026-05-27-prototype-parts-search/tasks.md)
 
-OpenSpec CLI can validate the change from the repository root:
+OpenSpec CLI can validate the specs from the repository root:
 
 ```bash
-openspec validate prototype-parts-search
+openspec validate --all
 ```
 
 ## Search Logging
