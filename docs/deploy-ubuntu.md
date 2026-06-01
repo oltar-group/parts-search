@@ -170,6 +170,7 @@ HOST_PORT=3000
 UNIQTRADE_EMAIL=
 UNIQTRADE_PASSWORD=
 UNIQTRADE_BROWSER_FINGERPRINT=parts-search-production
+UNIQTRADE_CURRENCY=UAH
 
 SEARCH_LOG_LEVEL=summary
 SEARCH_LOG_FILE=logs/search.log
@@ -183,7 +184,7 @@ For Docker Compose, `HOST` is forced to `0.0.0.0` inside the container by `compo
 
 Fill in credentials only for the suppliers that should be enabled:
 
-- `UNIQTRADE_EMAIL`, `UNIQTRADE_PASSWORD`, `UNIQTRADE_BROWSER_FINGERPRINT` - UniqTrade.
+- `UNIQTRADE_EMAIL`, `UNIQTRADE_PASSWORD`, `UNIQTRADE_BROWSER_FINGERPRINT`, `UNIQTRADE_CURRENCY` - UniqTrade.
 - `SLINE_API_KEY` - S-LINE.
 - `TEHNOMIR_API_TOKEN` - Tehnomir.
 - `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, `AUTONOVA_CLIENT_ID` - Autonova-D.

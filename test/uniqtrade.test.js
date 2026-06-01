@@ -98,6 +98,61 @@ test("normalizes documented UniqTrade details payload", () => {
   );
 });
 
+test("uses configured UniqTrade currency field when account price is EUR", () => {
+  const results = normalizeUniqTradeSearch({
+    details: [
+      {
+        id: 516896,
+        brand: { name: "TRW", externalCode: "00049" },
+        displayBrand: "TRW",
+        article: "GDB2031",
+        title: "Brake pad set",
+        yourPrice: {
+          amount: 44.74,
+          currency: { code: "EUR" }
+        },
+        yourPriceUAH: {
+          amount: 2310.82,
+          currency: { code: "UAH" }
+        },
+        yourPriceEUR: {
+          amount: 44.74,
+          currency: { code: "EUR" }
+        }
+      }
+    ]
+  });
+  const eurResults = normalizeUniqTradeSearch(
+    {
+      details: [
+        {
+          id: 516896,
+          brand: { name: "TRW", externalCode: "00049" },
+          displayBrand: "TRW",
+          article: "GDB2031",
+          title: "Brake pad set",
+          yourPrice: {
+            amount: 44.74,
+            currency: { code: "EUR" }
+          },
+          yourPriceUAH: {
+            amount: 2310.82,
+            currency: { code: "UAH" }
+          },
+          yourPriceEUR: {
+            amount: 44.74,
+            currency: { code: "EUR" }
+          }
+        }
+      ]
+    },
+    { currency: "EUR" }
+  );
+
+  assert.deepEqual(results[0].price, { value: 2310.82, currency: "UAH" });
+  assert.deepEqual(eurResults[0].price, { value: 44.74, currency: "EUR" });
+});
+
 test("normalizes alternative remains field names", () => {
   const results = normalizeUniqTradeSearch([
     {

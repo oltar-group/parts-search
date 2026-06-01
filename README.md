@@ -43,6 +43,7 @@ Fill in:
 - `UNIQTRADE_EMAIL`
 - `UNIQTRADE_PASSWORD`
 - `UNIQTRADE_BROWSER_FINGERPRINT`
+- `UNIQTRADE_CURRENCY` to choose which UniqTrade price field to display, defaults to `UAH`
 - `UNIQTRADE_WEB_BASE_URL` if the provider shop URL differs from `https://order24.utr.ua`
 - `SLINE_API_KEY` to enable S-LINE search
 - `TEHNOMIR_API_TOKEN` to enable Tehnomir search

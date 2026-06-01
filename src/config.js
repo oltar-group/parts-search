@@ -63,6 +63,7 @@ export function readConfig(env = process.env) {
       password: env.UNIQTRADE_PASSWORD || "",
       browserFingerprint:
         env.UNIQTRADE_BROWSER_FINGERPRINT || "parts-search-prototype",
+      currency: env.UNIQTRADE_CURRENCY || "UAH",
       timeoutMs: parseInt(env.UNIQTRADE_TIMEOUT_MS || "20000", 10),
       logLevel: env.SEARCH_LOG_LEVEL || "off"
     },

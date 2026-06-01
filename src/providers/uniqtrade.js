@@ -23,6 +23,7 @@ export class UniqTradeProvider {
     this.password = options.password || "";
     this.browserFingerprint =
       options.browserFingerprint || "parts-search-prototype";
+    this.currency = normalizeCurrencyCode(options.currency || "UAH");
     this.timeoutMs = options.timeoutMs || 12000;
     this.logLevel = options.logLevel || "off";
     this.fetchImpl = options.fetchImpl || globalThis.fetch;
@@ -59,7 +60,8 @@ export class UniqTradeProvider {
       providerId: this.id,
       providerName: this.name,
       webBaseUrl: this.webBaseUrl,
-      apiBaseUrl: this.baseUrl
+      apiBaseUrl: this.baseUrl,
+      currency: this.currency
     });
     this.logSearchSummary({ article: normalizedArticle, brand, results });
     return results;
@@ -266,7 +268,7 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
     article,
     title: title || [brand, article].filter(Boolean).join(" "),
     category: pickString(item, ["category", "categoryName", "groupName"]),
-    price: normalizePrice(item),
+    price: normalizePrice(item, provider.currency),
     quantity: pickNumber(item, ["quantity", "qty", "stock", "available"]),
     remains: pickRemains(item),
     images,
@@ -333,8 +335,13 @@ function normalizeImages(images) {
     .filter((image) => image.thumbnail || image.fullImagePath);
 }
 
-function normalizePrice(item) {
-  const price = item?.yourPrice || item?.price;
+function normalizePrice(item, preferredCurrency = "UAH") {
+  const currency = normalizeCurrencyCode(preferredCurrency);
+  const price =
+    item?.[`yourPrice${currency}`] ||
+    item?.yourPriceUAH ||
+    item?.yourPrice ||
+    item?.price;
   if (price && typeof price === "object") {
     return {
       value: Number(price.value ?? price.amount ?? price.price) || null,
@@ -356,6 +363,11 @@ function normalizePrice(item) {
     value,
     currency: pickString(item, ["currency", "priceCurrency"]) || "UAH"
   };
+}
+
+function normalizeCurrencyCode(currency) {
+  const normalized = String(currency || "").trim().toUpperCase();
+  return normalized || "UAH";
 }
 
 function pickString(item, keys) {
