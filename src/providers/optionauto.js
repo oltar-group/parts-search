@@ -6,7 +6,7 @@ import { logEvent } from "../logger.js";
 const DEFAULT_PROVIDER = {
   id: "optionauto",
   name: "OptionAuto",
-  apiBaseUrl: "https://t2.dev.vortex-services.com/front_api",
+  apiBaseUrl: "https://crm.optionauto.com.ua/front_api",
   webBaseUrl: "https://www.optionauto.com.ua"
 };
 
@@ -14,7 +14,7 @@ export class OptionAutoProvider {
   constructor(options = {}) {
     this.id = DEFAULT_PROVIDER.id;
     this.name = DEFAULT_PROVIDER.name;
-    this.baseUrl = options.baseUrl || DEFAULT_PROVIDER.apiBaseUrl;
+    this.baseUrl = trimTrailingSlash(options.baseUrl || DEFAULT_PROVIDER.apiBaseUrl);
     this.webBaseUrl = trimTrailingSlash(
       options.webBaseUrl || DEFAULT_PROVIDER.webBaseUrl
     );
@@ -118,7 +118,7 @@ export class OptionAutoProvider {
     }
 
     const payload = await safeJson(response);
-    if (payload?.success === false || payload?.error || payload?.errors) {
+    if (payloadHasError(payload)) {
       throw new ProviderError(
         "provider_error",
         pickErrorMessage(payload) || "OptionAuto request failed",
@@ -418,12 +418,23 @@ function pickDeliveryType(stock) {
 }
 
 function extractArticleRows(payload) {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
   if (Array.isArray(payload)) {
     return payload;
   }
-  for (const key of ["items", "Items", "results", "Results", "data", "Data"]) {
+  for (const key of ["items", "Items", "results", "Results", "rows", "Rows"]) {
     if (Array.isArray(payload?.[key])) {
       return payload[key];
+    }
+  }
+  for (const key of ["data", "Data", "payload", "Payload", "response", "Response"]) {
+    if (payload?.[key] && typeof payload[key] === "object") {
+      const nestedRows = extractArticleRows(payload[key]);
+      if (nestedRows.length > 0) {
+        return nestedRows;
+      }
     }
   }
   return [];
@@ -528,11 +539,37 @@ function pickErrorMessage(payload) {
     payload?.Error ||
     payload?.errors ||
     payload?.Errors ||
+    payload?.data?.message ||
+    payload?.data?.Message ||
+    payload?.data?.error_description ||
+    payload?.data?.error?.message ||
+    payload?.Data?.message ||
+    payload?.Data?.Message ||
+    payload?.Data?.error_description ||
+    payload?.Data?.error?.message ||
     "";
   if (!message) {
     return "";
   }
   return typeof message === "string" ? message : JSON.stringify(redactSensitive(message));
+}
+
+function payloadHasError(payload) {
+  return Boolean(
+    payload?.success === false ||
+      payload?.error ||
+      payload?.Error ||
+      payload?.errors ||
+      payload?.Errors ||
+      payload?.data?.error ||
+      payload?.data?.Error ||
+      payload?.data?.errors ||
+      payload?.data?.Errors ||
+      payload?.Data?.error ||
+      payload?.Data?.Error ||
+      payload?.Data?.errors ||
+      payload?.Data?.Errors
+  );
 }
 
 function randomFiveDigits() {

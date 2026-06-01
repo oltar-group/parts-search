@@ -101,7 +101,7 @@ export function readConfig(env = process.env) {
       logLevel: env.SEARCH_LOG_LEVEL || "off"
     },
     optionauto: {
-      baseUrl: env.OPTIONAUTO_API_BASE_URL || "https://t2.dev.vortex-services.com/front_api",
+      baseUrl: env.OPTIONAUTO_API_BASE_URL || "https://crm.optionauto.com.ua/front_api",
       webBaseUrl: env.OPTIONAUTO_WEB_BASE_URL || "https://www.optionauto.com.ua",
       apiKey: env.OPTIONAUTO_API_KEY || "",
       clientId: env.OPTIONAUTO_CLIENT_ID || "",

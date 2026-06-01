@@ -15,7 +15,7 @@ import {
 test("OptionAuto provider builds signed Vortex search and stock requests", async () => {
   const calls = [];
   const provider = new OptionAutoProvider({
-    baseUrl: "https://vortex.example/front_api",
+    baseUrl: "https://vortex.example/front_api/",
     webBaseUrl: "https://www.optionauto.com.ua",
     apiKey: "secret-key",
     clientId: "90",
@@ -130,6 +130,49 @@ test("normalizes OptionAuto article search rows", () => {
   assert.equal(results[0].brand, "SPIDAN");
   assert.equal(results[0].article, "55822");
   assert.equal(results[0].providerUrl, "https://www.optionauto.com.ua/catalog?query=55822");
+});
+
+test("normalizes OptionAuto article rows from nested data wrappers", () => {
+  const results = normalizeOptionAutoArticleSearch({
+    data: {
+      items: [
+        {
+          code: "GDB1550",
+          id: "991",
+          trademark: "TRW",
+          name: "Колодки дискового тормоза"
+        }
+      ]
+    }
+  });
+
+  assert.equal(results.length, 1);
+  assert.equal(results[0].externalId, "991");
+  assert.equal(results[0].brand, "TRW");
+  assert.equal(results[0].article, "GDB1550");
+});
+
+test("OptionAuto provider reports nested API errors instead of empty results", async () => {
+  const provider = new OptionAutoProvider({
+    baseUrl: "https://vortex.example/front_api",
+    apiKey: "secret-key",
+    clientId: "90",
+    fetchImpl: async () =>
+      jsonResponse(200, {
+        data: {
+          error: {
+            id: "ERROR_ACCESS_DENIED",
+            message: "Access to this data is denied"
+          },
+          error_description: "Access denied"
+        }
+      })
+  });
+
+  await assert.rejects(
+    () => provider.search({ article: "GDB1550", brand: "" }),
+    /Access denied/
+  );
 });
 
 test("merges OptionAuto stock payloads into article rows", () => {

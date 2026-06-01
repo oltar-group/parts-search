@@ -11,7 +11,7 @@ PHP sample contained an API key, so the committed copy uses placeholders.
 ## Prototype Configuration
 
 ```env
-OPTIONAUTO_API_BASE_URL=https://t2.dev.vortex-services.com/front_api
+OPTIONAUTO_API_BASE_URL=https://crm.optionauto.com.ua/front_api
 OPTIONAUTO_WEB_BASE_URL=https://www.optionauto.com.ua
 OPTIONAUTO_API_KEY=
 OPTIONAUTO_CLIENT_ID=
