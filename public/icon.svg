@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Parts Search">
+  <rect width="512" height="512" rx="96" fill="#0f172a" />
+  <g fill="none" stroke="#38bdf8" stroke-width="28" stroke-linecap="round">
+    <circle cx="224" cy="224" r="120" />
+    <line x1="312" y1="312" x2="404" y2="404" />
+  </g>
+  <g fill="#38bdf8">
+    <circle cx="224" cy="224" r="34" />
+  </g>
+</svg>
