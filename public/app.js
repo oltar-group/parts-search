@@ -11,6 +11,10 @@ const dialogImage = document.querySelector("#dialog-image");
 const dialogClose = document.querySelector(".dialog-close");
 const buildInfo = document.querySelector("#build-info");
 const searchStats = document.querySelector("#search-stats");
+const sortControl = document.querySelector("#sort-control");
+const sortOptions = [...document.querySelectorAll(".sort-option")];
+let currentResults = [];
+let currentSort = "";
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -21,6 +25,14 @@ imageDialog.addEventListener("click", (event) => {
 
 loadBuildInfo();
 loadSearchStats();
+
+sortOptions.forEach((option) => {
+  option.addEventListener("click", () => {
+    currentSort = option.dataset.sort || "";
+    updateSortControl();
+    renderResults(currentResults);
+  });
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -35,6 +47,8 @@ form.addEventListener("submit", async (event) => {
 
   setLoading(true);
   setStatus("Searching suppliers...");
+  setSortVisibility(false);
+  currentResults = [];
   renderProviderMessages([], []);
   resultsEl.replaceChildren();
 
@@ -54,9 +68,11 @@ form.addEventListener("submit", async (event) => {
     }
 
     renderProviderMessages(payload.errors || [], payload.providers || []);
-    renderResults(payload.results || []);
+    currentResults = payload.results || [];
+    renderResults(currentResults);
 
     const count = payload.results?.length || 0;
+    setSortVisibility(count > 1);
     if (count === 0 && payload.errors?.length) {
       setStatus("No results because all providers failed.", "error");
     } else if (count === 0) {
@@ -175,7 +191,66 @@ function formatProviderError(error) {
 }
 
 function renderResults(results) {
-  resultsEl.replaceChildren(...results.map(renderResultCard));
+  resultsEl.replaceChildren(...sortResults(results).map(renderResultCard));
+}
+
+function sortResults(results) {
+  if (!currentSort) {
+    return results;
+  }
+
+  const direction = currentSort === "price-desc" ? -1 : 1;
+  return results
+    .map((result, index) => ({ result, index, price: getPriceValue(result) }))
+    .sort((left, right) => {
+      const leftHasPrice = Number.isFinite(left.price);
+      const rightHasPrice = Number.isFinite(right.price);
+
+      if (leftHasPrice && rightHasPrice && left.price !== right.price) {
+        return (left.price - right.price) * direction;
+      }
+
+      if (leftHasPrice !== rightHasPrice) {
+        return leftHasPrice ? -1 : 1;
+      }
+
+      return left.index - right.index;
+    })
+    .map((entry) => entry.result);
+}
+
+function getPriceValue(result) {
+  const value = result?.price?.value;
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = Number(value.replace(",", "."));
+    return Number.isFinite(normalized) ? normalized : NaN;
+  }
+
+  return NaN;
+}
+
+function setSortVisibility(isVisible) {
+  if (!sortControl) {
+    return;
+  }
+
+  sortControl.hidden = !isVisible;
+  if (!isVisible) {
+    currentSort = "";
+  }
+  updateSortControl();
+}
+
+function updateSortControl() {
+  for (const option of sortOptions) {
+    const isActive = option.dataset.sort === currentSort;
+    option.classList.toggle("active", isActive);
+    option.setAttribute("aria-pressed", String(isActive));
+  }
 }
 
 function renderProviderLabel(providerEl, result) {

@@ -49,6 +49,29 @@
 
       <section class="status-row" aria-live="polite">
         <div id="status" class="status">Enter an article number to start.</div>
+        <div id="sort-control" class="sort-control" hidden>
+          <span>Sort</span>
+          <div class="sort-segment" role="group" aria-label="Sort results by price">
+            <button
+              type="button"
+              class="sort-option"
+              data-sort="price-asc"
+              aria-label="Sort by price ascending"
+              title="Price ascending"
+            >
+              Price ↑
+            </button>
+            <button
+              type="button"
+              class="sort-option"
+              data-sort="price-desc"
+              aria-label="Sort by price descending"
+              title="Price descending"
+            >
+              Price ↓
+            </button>
+          </div>
+        </div>
       </section>
 
       <section id="provider-errors" class="provider-errors" hidden></section>

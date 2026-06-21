@@ -125,6 +125,8 @@ button.image-wrap:hover {
 .status-row {
   min-height: 56px;
   display: flex;
+  justify-content: space-between;
+  gap: 16px;
   align-items: center;
 }
 
@@ -135,6 +137,51 @@ button.image-wrap:hover {
 
 .status.error {
   color: var(--danger);
+}
+
+.sort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sort-control[hidden] {
+  display: none;
+}
+
+.sort-segment {
+  display: inline-flex;
+  min-height: 34px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.sort-option {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.sort-option:hover {
+  background: #f8fafb;
+  color: var(--ink);
+}
+
+.sort-option.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 38, 0.12);
 }
 
 .provider-errors {
@@ -428,6 +475,13 @@ dd {
   .search-panel,
   .search-form {
     grid-template-columns: 1fr;
+  }
+
+  .status-row {
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 0;
   }
 
   .result-card {
