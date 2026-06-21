@@ -41,6 +41,7 @@ export function readConfig(env = process.env) {
     port: parseInt(env.PORT || "3000", 10),
     includeSupplierImages: env.INCLUDE_SUPPLIER_IMAGES !== "false",
     searchLogLevel: env.SEARCH_LOG_LEVEL || "off",
+    searchStatsFile: env.SEARCH_STATS_FILE || "data/search-stats.json",
     build: {
       version: env.BUILD_VERSION || env.npm_package_version || packageVersion,
       commit:

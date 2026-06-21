@@ -10,6 +10,7 @@ const imageDialog = document.querySelector("#image-dialog");
 const dialogImage = document.querySelector("#dialog-image");
 const dialogClose = document.querySelector(".dialog-close");
 const buildInfo = document.querySelector("#build-info");
+const searchStats = document.querySelector("#search-stats");
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -19,6 +20,7 @@ imageDialog.addEventListener("click", (event) => {
 });
 
 loadBuildInfo();
+loadSearchStats();
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -65,6 +67,7 @@ form.addEventListener("submit", async (event) => {
     } else {
       setStatus(`${count} result${count === 1 ? "" : "s"} found.`);
     }
+    await loadSearchStats();
   } catch (error) {
     setStatus(error?.message || "Search failed.", "error");
   } finally {
@@ -91,6 +94,33 @@ async function loadBuildInfo() {
     buildInfo.textContent = parts.length ? `Build ${parts.join(" · ")}` : "";
   } catch {
     buildInfo.textContent = "";
+  }
+}
+
+async function loadSearchStats() {
+  if (!searchStats) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/search-stats");
+    if (!response.ok) {
+      searchStats.hidden = true;
+      return;
+    }
+
+    const stats = await response.json();
+    const total = formatInteger(stats?.totalSearches);
+    const today = formatInteger(stats?.todaySearches);
+    if (!total) {
+      searchStats.hidden = true;
+      return;
+    }
+
+    searchStats.textContent = `Searches ${total} · Today ${today || "0"}`;
+    searchStats.hidden = false;
+  } catch {
+    searchStats.hidden = true;
   }
 }
 
@@ -255,6 +285,14 @@ function formatPrice(price) {
     currency: price.currency || "UAH",
     maximumFractionDigits: 2
   }).format(price.value);
+}
+
+function formatInteger(value) {
+  if (!Number.isFinite(value)) {
+    return "";
+  }
+
+  return new Intl.NumberFormat().format(value);
 }
 
 function getProviderActionUrl(result) {

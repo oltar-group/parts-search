@@ -14,6 +14,7 @@ Small full-stack prototype for searching spare parts through supplier APIs. The 
 - Calls UniqTrade search with `info=1` so supplier image metadata can be shown.
 - Normalizes provider responses into one result model.
 - Handles loading, empty results, provider errors, auth errors, and missing images.
+- Tracks successful search requests in a persistent local stats file.
 
 ## Requirements
 
@@ -49,6 +50,7 @@ Fill in:
 - `TEHNOMIR_API_TOKEN` to enable Tehnomir search
 - `AUTONOVA_LOGIN`, `AUTONOVA_PASSWORD`, and `AUTONOVA_CLIENT_ID` to enable Autonova-D search
 - `OPTIONAUTO_API_KEY` and `OPTIONAUTO_CLIENT_ID` to enable OptionAuto search
+- `SEARCH_STATS_FILE` to choose where search counters are stored, defaults to `data/search-stats.json`
 
 Then run:
 
@@ -96,9 +98,10 @@ Open `http://localhost:3000`, or `http://localhost:8080` if `HOST_PORT=8080`.
 
 The Compose file forces `HOST=0.0.0.0` inside the container so published ports
 work even if `.env` contains `HOST=127.0.0.1`. Search logs are written to the
-host `./logs` directory. The container entrypoint fixes `/app/logs` ownership at
-startup and then runs the Node.js process as the non-root `node` user, so a fresh
-checkout with no existing `logs/` directory still works on Linux.
+host `./logs` directory, and search counters are written to `./data`. The
+container entrypoint fixes `/app/logs` and `/app/data` ownership at startup and
+then runs the Node.js process as the non-root `node` user, so a fresh checkout
+with no existing `logs/` or `data/` directory still works on Linux.
 
 Without Compose on macOS/Linux:
 
@@ -109,6 +112,7 @@ docker run -d --name parts-search \
   -e HOST=0.0.0.0 \
   -p 3000:3000 \
   -v "$(pwd)/logs:/app/logs" \
+  -v "$(pwd)/data:/app/data" \
   parts-search-prototype
 ```
 
@@ -123,6 +127,7 @@ docker run -d --name parts-search `
   -e HOST=0.0.0.0 `
   -p 3000:3000 `
   -v "${PWD}/logs:/app/logs" `
+  -v "${PWD}/data:/app/data" `
   parts-search-prototype
 ```
 
@@ -180,6 +185,20 @@ SEARCH_LOG_MAX_FILES=5
 ```
 
 Useful when a result appears in API search but cannot be bought in the provider shop: check `quantity`, `remains`, price, provider URL, and any raw availability fields.
+
+## Search Statistics
+
+The server counts successful `GET /api/parts/search` requests after query
+validation. Empty or too-broad queries are not counted. Counters are stored in a
+local JSON file and survive server restarts:
+
+```env
+SEARCH_STATS_FILE=data/search-stats.json
+```
+
+The web UI reads `GET /api/search-stats` and shows compact totals in the footer.
+The endpoint is read-only; search requests are the only thing that increments
+the counters.
 
 ## Provider API Docs
 

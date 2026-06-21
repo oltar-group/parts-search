@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { ProviderError } from "../src/providers/provider-error.js";
+import { SearchStatsStore } from "../src/search-stats.js";
 import { searchParts } from "../src/search-service.js";
 import { createRequestHandler } from "../src/server.js";
 
@@ -135,7 +139,10 @@ test("HTTP API serves successful search and does not expose secrets", async () =
           raw: { token: "provider-internal-value", value: "visible" }
         }
       ])
-    ]
+    ],
+    searchStats: new SearchStatsStore({
+      filePath: await createStatsFilePath()
+    })
   });
 
   const response = await callHandler(handler, "/api/parts/search?q=OC90");
@@ -158,6 +165,70 @@ test("HTTP API returns validation error for empty query", async () => {
 
   assert.equal(response.status, 400);
   assert.equal(payload.errors[0].code, "empty_query");
+});
+
+test("HTTP API records search stats for valid searches", async () => {
+  const searchStats = new SearchStatsStore({
+    filePath: await createStatsFilePath()
+  });
+  const handler = createRequestHandler({
+    config: { includeSupplierImages: true },
+    providers: [provider("mock", "Mock Supplier", [])],
+    searchStats
+  });
+
+  const searchResponse = await callHandler(handler, "/api/parts/search?q=OC90");
+  const statsResponse = await callHandler(handler, "/api/search-stats");
+  const stats = JSON.parse(statsResponse.body);
+
+  assert.equal(searchResponse.status, 200);
+  assert.equal(statsResponse.status, 200);
+  assert.equal(stats.totalSearches, 1);
+  assert.equal(stats.todaySearches, 1);
+  assert.equal(stats.last7DaysSearches, 1);
+  assert.match(stats.firstSearchAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(stats.lastSearchAt, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("HTTP API does not record invalid search queries", async () => {
+  const searchStats = new SearchStatsStore({
+    filePath: await createStatsFilePath()
+  });
+  const handler = createRequestHandler({
+    config: { includeSupplierImages: true },
+    providers: [provider("mock", "Mock Supplier", [])],
+    searchStats
+  });
+
+  const searchResponse = await callHandler(handler, "/api/parts/search?q=");
+  const statsResponse = await callHandler(handler, "/api/search-stats");
+  const stats = JSON.parse(statsResponse.body);
+
+  assert.equal(searchResponse.status, 400);
+  assert.equal(stats.totalSearches, 0);
+  assert.equal(stats.todaySearches, 0);
+});
+
+test("search stats persist after recreating the store", async () => {
+  const filePath = await createStatsFilePath();
+  const firstHandler = createRequestHandler({
+    config: { includeSupplierImages: true },
+    providers: [provider("mock", "Mock Supplier", [])],
+    searchStats: new SearchStatsStore({ filePath })
+  });
+
+  await callHandler(firstHandler, "/api/parts/search?q=OC90");
+
+  const secondHandler = createRequestHandler({
+    config: { includeSupplierImages: true },
+    providers: [provider("mock", "Mock Supplier", [])],
+    searchStats: new SearchStatsStore({ filePath })
+  });
+  const statsResponse = await callHandler(secondHandler, "/api/search-stats");
+  const stats = JSON.parse(statsResponse.body);
+
+  assert.equal(stats.totalSearches, 1);
+  assert.equal(stats.todaySearches, 1);
 });
 
 test("HTTP health exposes build information", async () => {
@@ -193,6 +264,11 @@ function provider(id, name, results) {
       return results;
     }
   };
+}
+
+async function createStatsFilePath() {
+  const dir = await mkdtemp(join(tmpdir(), "parts-search-stats-"));
+  return join(dir, "search-stats.json");
 }
 
 async function callHandler(handler, url) {

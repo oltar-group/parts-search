@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadEnvFile, readConfig } from "./config.js";
 import { configureLogger } from "./logger.js";
 import { createProviders } from "./providers/index.js";
+import { SearchStatsStore } from "./search-stats.js";
 import { searchParts } from "./search-service.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -22,12 +23,16 @@ const contentTypes = {
 export function createServer({ config, providers } = {}) {
   const appConfig = config || readConfig();
   const providerList = providers || createProviders(appConfig);
-  return createHttpServer(createRequestHandler({ config: appConfig, providers: providerList }));
+  return createHttpServer(
+    createRequestHandler({ config: appConfig, providers: providerList })
+  );
 }
 
-export function createRequestHandler({ config, providers }) {
+export function createRequestHandler({ config, providers, searchStats } = {}) {
   const appConfig = config || readConfig();
   const providerList = providers || createProviders(appConfig);
+  const searchStatsStore =
+    searchStats || new SearchStatsStore({ filePath: appConfig.searchStatsFile });
 
   return async (req, res) => {
     try {
@@ -49,6 +54,12 @@ export function createRequestHandler({ config, providers }) {
         return;
       }
 
+      if (url.pathname === "/api/search-stats") {
+        const stats = await searchStatsStore.getStats();
+        sendJson(res, 200, stats);
+        return;
+      }
+
       if (url.pathname === "/api/parts/search") {
         const result = await searchParts({
           query: Object.fromEntries(url.searchParams),
@@ -56,6 +67,9 @@ export function createRequestHandler({ config, providers }) {
           includeImages: appConfig.includeSupplierImages,
           logLevel: appConfig.searchLogLevel
         });
+        if (result.status === 200) {
+          await recordSearchStat(searchStatsStore);
+        }
         sendJson(res, result.status, result.body);
         return;
       }
@@ -70,6 +84,14 @@ export function createRequestHandler({ config, providers }) {
       });
     }
   };
+}
+
+async function recordSearchStat(searchStatsStore) {
+  try {
+    await searchStatsStore.recordSearch();
+  } catch (error) {
+    console.error(`Failed to record search stats: ${error.message}`);
+  }
 }
 
 function serveStatic(pathname, res) {

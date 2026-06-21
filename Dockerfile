@@ -11,7 +11,7 @@ COPY public ./public
 COPY src ./src
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-RUN mkdir -p logs \
+RUN mkdir -p logs data \
   && chown -R node:node /app \
   && chmod +x /usr/local/bin/docker-entrypoint.sh
 

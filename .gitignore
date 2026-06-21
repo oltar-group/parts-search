@@ -4,5 +4,6 @@
 node_modules/
 coverage/
 logs/
+data/
 .DS_Store
 npm-debug.log*

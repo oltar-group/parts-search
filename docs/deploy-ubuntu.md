@@ -8,6 +8,7 @@ This document describes how to install the application on a clean Ubuntu server.
 - Updates are deployed with `git pull` and a container rebuild.
 - Configuration is stored in `/opt/parts-search/.env`.
 - Search logs are written to `/opt/parts-search/logs/search.log`.
+- Search counters are stored in `/opt/parts-search/data/search-stats.json`.
 - The application is available at `http://SERVER_IP:3000`, or another external port if `3000` is already in use.
 - The container restarts automatically after a server reboot.
 
@@ -176,6 +177,7 @@ SEARCH_LOG_LEVEL=summary
 SEARCH_LOG_FILE=logs/search.log
 SEARCH_LOG_MAX_BYTES=1048576
 SEARCH_LOG_MAX_FILES=5
+SEARCH_STATS_FILE=data/search-stats.json
 ```
 
 For Docker Compose, `HOST` is forced to `0.0.0.0` inside the container by `compose.yaml`, so it is fine to keep `127.0.0.1` in `.env`.
@@ -310,6 +312,12 @@ Search logs:
 
 ```bash
 tail -f logs/search.log
+```
+
+Search counters:
+
+```bash
+cat data/search-stats.json
 ```
 
 If you need more details from supplier responses, temporarily set:
