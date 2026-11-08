@@ -56,7 +56,7 @@ export class UniqTradeProvider {
 
     const path = `/search-engine/crosses?${params}`;
     const response = await this.authenticatedRequest(path);
-    const payload = await safeJson(response);
+    const payload = await safeJson(response, this.id);
     this.logRawSearch({ article: normalizedArticle, brand, path, payload });
 
     const results = normalizeUniqTradeSearch(payload, {
@@ -110,7 +110,7 @@ export class UniqTradeProvider {
       throw await this.errorFromResponse(response, "auth_failed");
     }
 
-    const payload = await safeJson(response);
+    const payload = await safeJson(response, this.id);
     this.token = payload?.token || payload?.access_token || null;
     this.refreshToken = payload?.refresh_token || payload?.refreshToken || null;
 
@@ -145,7 +145,7 @@ export class UniqTradeProvider {
       throw await this.errorFromResponse(response, "auth_failed");
     }
 
-    const payload = await safeJson(response);
+    const payload = await safeJson(response, this.id);
     this.token = payload?.token || payload?.access_token || this.token;
     this.refreshToken =
       payload?.refresh_token || payload?.refreshToken || this.refreshToken;
@@ -176,7 +176,7 @@ export class UniqTradeProvider {
   }
 
   async errorFromResponse(response, fallbackCode = "provider_error") {
-    const payload = await safeJson(response);
+    const payload = await safeJson(response, this.id);
     const message =
       payload?.message ||
       payload?.error ||
@@ -451,7 +451,7 @@ function trimTrailingSlash(value) {
   return String(value).replace(/\/+$/, "");
 }
 
-async function safeJson(response) {
+async function safeJson(response, providerId) {
   const text = await response.text();
   if (!text) {
     return null;
@@ -460,6 +460,14 @@ async function safeJson(response) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new ProviderError("invalid_response", "Provider returned invalid JSON");
+    logEvent({
+      event: "supplier.invalid_json",
+      providerId,
+      status: response.status,
+      snippet: text.slice(0, 500)
+    });
+    throw new ProviderError("invalid_response", "Provider returned invalid JSON", {
+      providerId
+    });
   }
 }
