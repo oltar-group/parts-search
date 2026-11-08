@@ -104,7 +104,9 @@ export class AutonovaProvider {
       providerName: this.name,
       webBaseUrl: this.webBaseUrl,
       fallback: result
-    }).filter((entry) => matchesBrandFilter(entry, brand));
+    })
+      .filter((entry) => matchesArticleFilter(entry, result.article))
+      .filter((entry) => matchesBrandFilter(entry, brand));
 
     if (detailResults.length === 0) {
       return {
