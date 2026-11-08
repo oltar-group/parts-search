@@ -88,12 +88,13 @@ export async function searchParts({
     const entry = settled[index];
 
     if (entry.status === "fulfilled") {
-      results.push(...redactSensitive(entry.value.results));
+      const actionableResults = entry.value.results.filter(hasActionableInfo);
+      results.push(...redactSensitive(actionableResults));
       providerStates.push({
         id: provider.id,
         name: provider.name,
         ok: true,
-        count: entry.value.results.length
+        count: actionableResults.length
       });
     } else {
       errors.push(providerErrorToResponse(entry.reason, provider));
@@ -131,4 +132,10 @@ export async function searchParts({
     status: 200,
     body
   };
+}
+
+function hasActionableInfo(result) {
+  const hasPrice = typeof result?.price?.value === "number";
+  const hasRemains = Array.isArray(result?.remains) && result.remains.length > 0;
+  return hasPrice || hasRemains;
 }

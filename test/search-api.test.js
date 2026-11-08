@@ -55,10 +55,10 @@ test("search service merges a second provider without changing response contract
     query: { q: "OC90", brand: "MAHLE" },
     providers: [
       provider("uniqtrade", "UniqTrade", [
-        { providerId: "uniqtrade", article: "OC90" }
+        { providerId: "uniqtrade", article: "OC90", price: { value: 10, currency: "UAH" } }
       ]),
       provider("second", "Second Supplier", [
-        { providerId: "second", article: "OC90" }
+        { providerId: "second", article: "OC90", price: { value: 20, currency: "UAH" } }
       ])
     ]
   });
@@ -76,7 +76,9 @@ test("search service returns partial results when one provider fails", async () 
   const result = await searchParts({
     query: { q: "OC90" },
     providers: [
-      provider("ok", "OK Provider", [{ providerId: "ok", article: "OC90" }]),
+      provider("ok", "OK Provider", [
+        { providerId: "ok", article: "OC90", price: { value: 10, currency: "UAH" } }
+      ]),
       {
         id: "fail",
         name: "Fail Provider",
@@ -109,6 +111,7 @@ test("search service logs summary when enabled", async () => {
           {
             providerId: "ok",
             article: "OC90",
+            price: { value: 10, currency: "UAH" },
             raw: { token: "secret-token" }
           }
         ])
@@ -135,6 +138,7 @@ test("HTTP API serves successful search and does not expose secrets", async () =
           article: "OC90",
           brand: "MAHLE",
           title: "Oil filter",
+          price: { value: 10, currency: "UAH" },
           images: [],
           raw: { token: "provider-internal-value", value: "visible" }
         }
