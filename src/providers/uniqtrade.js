@@ -45,16 +45,14 @@ export class UniqTradeProvider {
     }
 
     const normalizedArticle = String(article || "").trim();
-    const oem = normalizedArticle.replace(/[^a-zA-Z0-9]/g, "");
     const params = new URLSearchParams();
-    params.set("oem", oem);
-    params.set("page", "1");
-    params.set("limit", "20");
     if (brand) {
       params.set("brand", brand);
     }
 
-    const path = `/search-engine/crosses?${params}`;
+    const path = `/api/search/${encodeURIComponent(normalizedArticle)}${
+      params.toString() ? `?${params}` : ""
+    }`;
     const response = await this.authenticatedRequest(path);
     const payload = await safeJson(response, this.id);
     this.logRawSearch({ article: normalizedArticle, brand, path, payload });

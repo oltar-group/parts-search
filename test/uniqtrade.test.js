@@ -220,7 +220,7 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
       });
     }
 
-    if (url.includes("/search-engine/crosses") && calls.length === 2) {
+    if (url.includes("/api/search/OC90") && calls.length === 2) {
       return jsonResponse(401, { message: "Expired JWT Token" });
     }
 
@@ -231,9 +231,9 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
       });
     }
 
-    if (url.includes("/search-engine/crosses")) {
+    if (url.includes("/api/search/OC90")) {
       return jsonResponse(200, {
-        data: [{ brand: "MAHLE", article: "OC90", price: 100 }]
+        details: [{ brand: "MAHLE", article: "OC90", price: 100 }]
       });
     }
 
@@ -258,7 +258,7 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
     JSON.parse(calls[2].options.body).browser_fingerprint,
     "test"
   );
-  assert.match(calls[3].url, /oem=OC90/);
+  assert.match(calls[3].url, /\/api\/search\/OC90/);
   assert.match(calls[3].url, /brand=MAHLE/);
 });
 
