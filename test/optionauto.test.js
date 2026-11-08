@@ -94,7 +94,7 @@ test("OptionAuto provider builds signed Vortex search and stock requests", async
   assert.deepEqual(results[0].price, { value: 880, currency: "UAH" });
   assert.equal(
     results[0].providerUrl,
-    "https://www.optionauto.com.ua/catalog?query=55822"
+    "https://www.optionauto.com.ua/catalog/item/RUVILLE/55822"
   );
   assert.deepEqual(results[0].remains, [
     {
@@ -129,7 +129,7 @@ test("normalizes OptionAuto article search rows", () => {
   assert.equal(results[0].externalId, "1742488");
   assert.equal(results[0].brand, "SPIDAN");
   assert.equal(results[0].article, "55822");
-  assert.equal(results[0].providerUrl, "https://www.optionauto.com.ua/catalog?query=55822");
+  assert.equal(results[0].providerUrl, "https://www.optionauto.com.ua/catalog/item/SPIDAN/55822");
 });
 
 test("normalizes OptionAuto article rows from nested data wrappers", () => {
@@ -224,6 +224,16 @@ test("builds OptionAuto catalog URL", () => {
   assert.equal(
     buildOptionAutoCatalogUrl("https://www.optionauto.com.ua", { article: "55822" }),
     "https://www.optionauto.com.ua/catalog?query=55822"
+  );
+});
+
+test("builds OptionAuto item URL when brand is known", () => {
+  assert.equal(
+    buildOptionAutoCatalogUrl("https://www.optionauto.com.ua", {
+      article: "ADK82102",
+      brand: "Blue Print"
+    }),
+    "https://www.optionauto.com.ua/catalog/item/BLUEPRINT/ADK82102"
   );
 });
 

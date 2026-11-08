@@ -294,7 +294,7 @@ function normalizeOptionAutoArticle(item, index, provider = DEFAULT_PROVIDER) {
     hasImage: false,
     multiplicity: null,
     rawUrl: "",
-    providerUrl: buildOptionAutoCatalogUrl(provider.webBaseUrl, { article }),
+    providerUrl: buildOptionAutoCatalogUrl(provider.webBaseUrl, { article, brand }),
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
@@ -359,7 +359,7 @@ function normalizeOptionAutoStockItem(item, index, provider = DEFAULT_PROVIDER) 
     hasImage: false,
     multiplicity: null,
     rawUrl: "",
-    providerUrl: buildOptionAutoCatalogUrl(provider.webBaseUrl, { article }),
+    providerUrl: buildOptionAutoCatalogUrl(provider.webBaseUrl, { article, brand }),
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
@@ -474,12 +474,21 @@ function looksLikeStockPart(value) {
   );
 }
 
-export function buildOptionAutoCatalogUrl(baseUrl, { article }) {
+export function buildOptionAutoCatalogUrl(baseUrl, { article, brand }) {
+  const base = trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl);
+  const brandSlug = String(brand || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+
+  if (brandSlug && article) {
+    return `${base}/catalog/item/${encodeURIComponent(brandSlug)}/${encodeURIComponent(article)}`;
+  }
+
   const params = new URLSearchParams();
   if (article) {
     params.set("query", article);
   }
-  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/catalog?${params}`;
+  return `${base}/catalog?${params}`;
 }
 
 function matchesBrandFilter(result, brand) {
