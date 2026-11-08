@@ -5,7 +5,7 @@ import { logEvent } from "../logger.js";
 const DEFAULT_PROVIDER = {
   id: "uniqtrade",
   name: "UniqTrade",
-  webBaseUrl: "https://order24.utr.ua",
+  webBaseUrl: "https://ord24.utr.ua",
   apiBaseUrl: "https://order24-api.utr.ua"
 };
 
@@ -45,13 +45,16 @@ export class UniqTradeProvider {
     }
 
     const normalizedArticle = String(article || "").trim();
+    const oem = normalizedArticle.replace(/[^a-zA-Z0-9]/g, "");
     const params = new URLSearchParams();
+    params.set("oem", oem);
+    params.set("page", "1");
+    params.set("limit", "20");
     if (brand) {
       params.set("brand", brand);
     }
-    params.set("info", includeImages ? "1" : "0");
 
-    const path = `/api/search/${encodeURIComponent(normalizedArticle)}?${params}`;
+    const path = `/search-engine/crosses?${params}`;
     const response = await this.authenticatedRequest(path);
     const payload = await safeJson(response);
     this.logRawSearch({ article: normalizedArticle, brand, path, payload });
@@ -281,16 +284,13 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
   };
 }
 
-export function buildUniqTradeSearchUrl(baseUrl, { article, brand }) {
+export function buildUniqTradeSearchUrl(baseUrl, { article }) {
   const params = new URLSearchParams();
   if (article) {
-    params.set("article", article);
-  }
-  if (brand) {
-    params.set("brand", brand);
+    params.set("q", article);
   }
 
-  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/ua/search-results?${params}`;
+  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/search?${params}`;
 }
 
 function extractRows(payload) {
@@ -405,6 +405,7 @@ function pickNumber(item, keys) {
 
 function pickRemains(item) {
   for (const key of [
+    "remainsAll",
     "remains",
     "remain",
     "warehouses",

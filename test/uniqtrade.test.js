@@ -31,7 +31,7 @@ test("normalizes UniqTrade rows with supplier images", () => {
 
   assert.equal(results.length, 1);
   assert.equal(results[0].providerId, "uniqtrade");
-  assert.equal(results[0].providerHomeUrl, "https://order24.utr.ua");
+  assert.equal(results[0].providerHomeUrl, "https://ord24.utr.ua");
   assert.equal(results[0].brand, "MAHLE");
   assert.equal(results[0].article, "OC90");
   assert.deepEqual(results[0].price, { value: 120.5, currency: "UAH" });
@@ -90,7 +90,7 @@ test("normalizes documented UniqTrade details payload", () => {
     }
   ]);
   assert.equal(results[0].images[0].fullImagePath.includes("order24-api.utr.ua"), true);
-  assert.equal(results[0].providerUrl.includes("order24.utr.ua"), true);
+  assert.equal(results[0].providerUrl.includes("ord24.utr.ua"), true);
   assert.equal(results[0].providerUrl.includes("WL7129-12"), true);
   assert.equal(
     results[0].apiDetailUrl,
@@ -220,7 +220,7 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
       });
     }
 
-    if (url.includes("/api/search/OC90") && calls.length === 2) {
+    if (url.includes("/search-engine/crosses") && calls.length === 2) {
       return jsonResponse(401, { message: "Expired JWT Token" });
     }
 
@@ -231,7 +231,7 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
       });
     }
 
-    if (url.includes("/api/search/OC90")) {
+    if (url.includes("/search-engine/crosses")) {
       return jsonResponse(200, {
         data: [{ brand: "MAHLE", article: "OC90", price: 100 }]
       });
@@ -258,8 +258,8 @@ test("UniqTrade provider logs in, refreshes expired token, and retries once", as
     JSON.parse(calls[2].options.body).browser_fingerprint,
     "test"
   );
+  assert.match(calls[3].url, /oem=OC90/);
   assert.match(calls[3].url, /brand=MAHLE/);
-  assert.match(calls[3].url, /info=1/);
 });
 
 test("UniqTrade provider logs raw response and summary when enabled", async () => {
@@ -354,13 +354,12 @@ test("redacts sensitive fields from raw provider data", () => {
   );
 });
 
-test("builds provider search URL from article and brand", () => {
+test("builds provider search URL from article", () => {
   assert.equal(
-    buildUniqTradeSearchUrl("https://order24.utr.ua", {
-      article: "OC90",
-      brand: "MAHLE"
+    buildUniqTradeSearchUrl("https://ord24.utr.ua", {
+      article: "OC90"
     }),
-    "https://order24.utr.ua/ua/search-results?article=OC90&brand=MAHLE"
+    "https://ord24.utr.ua/search?q=OC90"
   );
 });
 

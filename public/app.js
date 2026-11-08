@@ -14,7 +14,7 @@ const searchStats = document.querySelector("#search-stats");
 const sortControl = document.querySelector("#sort-control");
 const sortOptions = [...document.querySelectorAll(".sort-option")];
 let currentResults = [];
-let currentSort = "";
+let currentSort = "price-asc";
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -239,9 +239,6 @@ function setSortVisibility(isVisible) {
   }
 
   sortControl.hidden = !isVisible;
-  if (!isVisible) {
-    currentSort = "";
-  }
   updateSortControl();
 }
 
