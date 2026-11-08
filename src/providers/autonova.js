@@ -63,7 +63,9 @@ export class AutonovaProvider {
       providerId: this.id,
       providerName: this.name,
       webBaseUrl: this.webBaseUrl
-    }).filter((result) => matchesBrandFilter(result, normalizedBrand));
+    })
+      .filter((result) => matchesArticleFilter(result, normalizedArticle))
+      .filter((result) => matchesBrandFilter(result, normalizedBrand));
 
     const rowsWithPartId = articleRows.filter((result) => result.externalId);
     const detailRows = await Promise.all(
@@ -705,6 +707,24 @@ function matchesBrandFilter(result, brand) {
     return true;
   }
   return normalizeComparable(result.displayBrand || result.brand) === normalizeComparable(brand);
+}
+
+function matchesArticleFilter(result, article) {
+  if (!article) {
+    return true;
+  }
+  const resultArticle = normalizeArticleForCompare(result.article);
+  const queryArticle = normalizeArticleForCompare(article);
+  if (!resultArticle || !queryArticle) {
+    return true;
+  }
+  return resultArticle.includes(queryArticle) || queryArticle.includes(resultArticle);
+}
+
+function normalizeArticleForCompare(value) {
+  return String(value || "")
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9а-яіїєґ]/gi, "");
 }
 
 function normalizeComparable(value) {
