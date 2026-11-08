@@ -271,7 +271,7 @@ export function normalizeUniqTradeItem(item, index, provider = DEFAULT_PROVIDER)
     category: pickString(item, ["category", "categoryName", "groupName"]),
     price: normalizePrice(item, provider.currency),
     quantity: pickNumber(item, ["quantity", "qty", "stock", "available"]),
-    remains: pickRemains(item),
+    remains: annotateRemainsDeliveryDays(pickRemains(item)),
     images,
     hasImage: images.length > 0,
     multiplicity: pickNumber(item, ["multiplicity", "minimumOrderQuantity", "pack"]),
@@ -419,6 +419,38 @@ function pickRemains(item) {
     if (value !== undefined && value !== null && value !== "") {
       return value;
     }
+  }
+
+  return null;
+}
+
+function annotateRemainsDeliveryDays(remains) {
+  if (!Array.isArray(remains)) {
+    return remains;
+  }
+
+  return remains.map((entry) => {
+    if (entry && typeof entry === "object" && entry.deliveryDays !== undefined) {
+      return entry;
+    }
+
+    const storageName =
+      entry?.storage?.name || entry?.storage?.originalName || entry?.storageName || "";
+    const deliveryDays = parseDeliveryDaysFromText(storageName);
+    return deliveryDays === null ? entry : { ...entry, deliveryDays };
+  });
+}
+
+function parseDeliveryDaysFromText(text) {
+  const value = String(text || "");
+  const rangeMatch = value.match(/(\d+)\s*[-–]\s*(\d+)\s*дн/iu);
+  if (rangeMatch) {
+    return Number(rangeMatch[2]);
+  }
+
+  const singleMatch = value.match(/(\d+)\s*дн/iu);
+  if (singleMatch) {
+    return Number(singleMatch[1]);
   }
 
   return null;

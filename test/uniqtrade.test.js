@@ -189,6 +189,22 @@ test("keeps empty remains empty", () => {
   assert.equal(results[0].quantity, 1);
 });
 
+test("parses delivery days out of UniqTrade backorder storage names", () => {
+  const results = normalizeUniqTradeSearch([
+    {
+      article: "610050",
+      brand: "ORIGINAL IMPERIUM",
+      remains: [
+        { storage: { name: "Під замовлення (2-4 дні)" }, remain: "1" },
+        { storage: { name: "Київ Лівий" }, remain: "> 10" }
+      ]
+    }
+  ]);
+
+  assert.equal(results[0].remains[0].deliveryDays, 4);
+  assert.equal(results[0].remains[1].deliveryDays, undefined);
+});
+
 test("normalizes UniqTrade rows without images", () => {
   const results = normalizeUniqTradeSearch([
     {
