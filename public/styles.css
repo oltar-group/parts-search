@@ -184,6 +184,27 @@ button.image-wrap:hover {
   box-shadow: 0 1px 3px rgba(23, 32, 38, 0.12);
 }
 
+.delivery-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.delivery-filter input {
+  width: 56px;
+  min-height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .provider-errors {
   margin-bottom: 16px;
   padding: 12px 14px;
@@ -327,12 +348,27 @@ button.image-wrap:hover {
   overflow-wrap: anywhere;
 }
 
+.price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: max-content;
+}
+
 .price {
   margin: 0;
   min-width: max-content;
   color: var(--ink);
   font-size: 1.02rem;
   font-weight: 800;
+}
+
+.cheaper-hint {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: right;
 }
 
 .details {

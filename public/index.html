@@ -71,6 +71,18 @@
               Price ↓
             </button>
           </div>
+          <label class="delivery-filter" for="max-delivery-days">
+            Delivery ≤
+            <input
+              type="number"
+              id="max-delivery-days"
+              min="0"
+              step="1"
+              placeholder="any"
+              inputmode="numeric"
+            />
+            days
+          </label>
         </div>
       </section>
 
@@ -91,7 +103,10 @@
               <p class="provider"></p>
               <h2 class="title"></h2>
             </div>
-            <p class="price"></p>
+            <div class="price-col">
+              <p class="price"></p>
+              <p class="cheaper-hint" hidden></p>
+            </div>
           </div>
           <dl class="details"></dl>
         </div>

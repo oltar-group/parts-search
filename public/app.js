@@ -13,8 +13,10 @@ const buildInfo = document.querySelector("#build-info");
 const searchStats = document.querySelector("#search-stats");
 const sortControl = document.querySelector("#sort-control");
 const sortOptions = [...document.querySelectorAll(".sort-option")];
+const maxDeliveryDaysInput = document.querySelector("#max-delivery-days");
 let currentResults = [];
 let currentSort = "price-asc";
+let maxDeliveryDays = null;
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -32,6 +34,13 @@ sortOptions.forEach((option) => {
     updateSortControl();
     renderResults(currentResults);
   });
+});
+
+maxDeliveryDaysInput.addEventListener("input", () => {
+  const raw = maxDeliveryDaysInput.value.trim();
+  const parsed = Number(raw);
+  maxDeliveryDays = raw && Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  renderResults(currentResults);
 });
 
 form.addEventListener("submit", async (event) => {
@@ -220,7 +229,11 @@ function sortResults(results) {
 }
 
 function getPriceValue(result) {
-  const value = result?.price?.value;
+  return priceToNumber(computeDisplayPrice(result).price);
+}
+
+function priceToNumber(price) {
+  const value = price?.value;
   if (typeof value === "number") {
     return value;
   }
@@ -231,6 +244,60 @@ function getPriceValue(result) {
   }
 
   return NaN;
+}
+
+function computeDisplayPrice(result) {
+  if (maxDeliveryDays === null) {
+    return { price: result?.price || null, cheaperAlternative: null };
+  }
+
+  const remains = Array.isArray(result?.remains) ? result.remains : [];
+  const priced = remains.filter((remain) => getRemainPrice(remain) !== null);
+  if (priced.length === 0) {
+    return { price: result?.price || null, cheaperAlternative: null };
+  }
+
+  const currency = result?.price?.currency || "UAH";
+  const cheapestOverall = priced.reduce((min, remain) =>
+    getRemainPrice(remain) < getRemainPrice(min) ? remain : min
+  );
+  const withinLimit = priced.filter((remain) => {
+    const days = getRemainDeliveryDays(remain);
+    return days === null || days <= maxDeliveryDays;
+  });
+
+  if (withinLimit.length === 0) {
+    return {
+      price: null,
+      cheaperAlternative: {
+        value: getRemainPrice(cheapestOverall),
+        currency,
+        days: getRemainDeliveryDays(cheapestOverall)
+      }
+    };
+  }
+
+  const cheapestWithin = withinLimit.reduce((min, remain) =>
+    getRemainPrice(remain) < getRemainPrice(min) ? remain : min
+  );
+  const effectivePrice = { value: getRemainPrice(cheapestWithin), currency };
+  const overallValue = getRemainPrice(cheapestOverall);
+  const cheaperAlternative =
+    overallValue < effectivePrice.value
+      ? { value: overallValue, currency, days: getRemainDeliveryDays(cheapestOverall) }
+      : null;
+
+  return { price: effectivePrice, cheaperAlternative };
+}
+
+function getRemainPrice(remain) {
+  const value = Number(remain?.price);
+  return Number.isFinite(value) ? value : null;
+}
+
+function getRemainDeliveryDays(remain) {
+  const value = Number(remain?.deliveryDays);
+  return Number.isFinite(value) ? value : null;
 }
 
 function setSortVisibility(isVisible) {
@@ -273,12 +340,23 @@ function renderResultCard(result) {
   const provider = node.querySelector(".provider");
   const title = node.querySelector(".title");
   const price = node.querySelector(".price");
+  const cheaperHint = node.querySelector(".cheaper-hint");
   const details = node.querySelector(".details");
   const actions = document.createElement("div");
 
   renderProviderLabel(provider, result);
   title.textContent = result.title || [result.brand, result.article].filter(Boolean).join(" ");
-  price.textContent = formatPrice(result.price);
+
+  const { price: displayPrice, cheaperAlternative } = computeDisplayPrice(result);
+  price.textContent = formatPrice(displayPrice);
+  if (cheaperAlternative) {
+    cheaperHint.textContent = `Cheaper: ${formatPrice(cheaperAlternative)} (${
+      Number.isFinite(cheaperAlternative.days) ? `${cheaperAlternative.days}d delivery` : "longer delivery"
+    })`;
+    cheaperHint.hidden = false;
+  } else {
+    cheaperHint.hidden = true;
+  }
 
   const image = result.images?.[0];
   if (image?.thumbnail || image?.fullImagePath) {

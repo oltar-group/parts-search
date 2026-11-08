@@ -229,6 +229,7 @@ function normalizeRests(rests) {
     multiplicity: pickNumber(rest, ["multiplicity", "Multiplicity"]),
     deliveryType: pickString(rest, ["deliveryType", "DeliveryType"]),
     deliveryTime: pickNumber(rest, ["deliveryTime", "DeliveryTime"]),
+    deliveryDays: pickNumber(rest, ["deliveryTime", "DeliveryTime"]),
     deliveryDate: pickString(rest, ["deliveryDate", "DeliveryDate"]),
     deliveryPercent: pickNumber(rest, ["deliveryPercent", "DeliveryPercent"]),
     isReturn: pickNumber(rest, ["isReturn", "IsReturn"]),
