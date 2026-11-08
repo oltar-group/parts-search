@@ -160,7 +160,8 @@ test("normalizes S-LINE offers as remains and minimum price without aggregating 
         ShippingDate: "2026-05-25T14:00:00",
         DeliveryAmount: 0,
         Message: ""
-      }
+      },
+      deliveryDays: 0
     },
     {
       storageId: 145,
@@ -176,9 +177,36 @@ test("normalizes S-LINE offers as remains and minimum price without aggregating 
         ShippingDate: "2026-05-26T12:00:00",
         DeliveryAmount: 0,
         Message: ""
-      }
+      },
+      deliveryDays: 0
     }
   ]);
+});
+
+test("computes deliveryDays from a future S-LINE shipping date", () => {
+  const offsetMs = 5 * 24 * 60 * 60 * 1000;
+  const future = new Date(Date.now() + offsetMs);
+  const expectedDays = Math.ceil(offsetMs / (24 * 60 * 60 * 1000));
+  const results = normalizeSLineSearch({
+    Parts: [
+      {
+        Id: 1,
+        Manufacturer: "BOSCH",
+        Number: "OC90",
+        Offers: [
+          {
+            StorageId: 1,
+            StorageName: "Kyiv",
+            Quantity: 1,
+            Price: 100,
+            Logistic: { ShippingDate: future.toISOString() }
+          }
+        ]
+      }
+    ]
+  });
+
+  assert.equal(results[0].remains[0].deliveryDays, expectedDays);
 });
 
 test("registers S-LINE provider only when API key is configured", () => {

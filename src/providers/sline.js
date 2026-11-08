@@ -252,16 +252,36 @@ function normalizeQuantity(item) {
 }
 
 function normalizeOffers(offers) {
-  return offers.map((offer) => ({
-    storageId: offer?.StorageId ?? offer?.storageId ?? null,
-    storageName: offer?.StorageName || offer?.storageName || "",
-    region: offer?.Region || offer?.region || "",
-    quantity: offer?.Quantity ?? offer?.quantity ?? null,
-    price: offer?.Price ?? offer?.price ?? null,
-    purchaseReturns: offer?.PurchaseReturns ?? offer?.purchaseReturns ?? null,
-    returnsDaysLimit: offer?.ReturnsDaysLimit ?? offer?.returnsDaysLimit ?? null,
-    logistic: offer?.Logistic || offer?.logistic || null
-  }));
+  return offers.map((offer) => {
+    const logistic = offer?.Logistic || offer?.logistic || null;
+    const shippingDate = logistic?.ShippingDate || logistic?.shippingDate || null;
+
+    return {
+      storageId: offer?.StorageId ?? offer?.storageId ?? null,
+      storageName: offer?.StorageName || offer?.storageName || "",
+      region: offer?.Region || offer?.region || "",
+      quantity: offer?.Quantity ?? offer?.quantity ?? null,
+      price: offer?.Price ?? offer?.price ?? null,
+      purchaseReturns: offer?.PurchaseReturns ?? offer?.purchaseReturns ?? null,
+      returnsDaysLimit: offer?.ReturnsDaysLimit ?? offer?.returnsDaysLimit ?? null,
+      logistic,
+      deliveryDays: computeDeliveryDays(shippingDate)
+    };
+  });
+}
+
+function computeDeliveryDays(shippingDate) {
+  if (!shippingDate) {
+    return null;
+  }
+
+  const target = new Date(shippingDate);
+  if (Number.isNaN(target.getTime())) {
+    return null;
+  }
+
+  const days = Math.ceil((target.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  return Math.max(days, 0);
 }
 
 export function buildSLineCabinetSearchUrl(baseUrl, { article }) {
