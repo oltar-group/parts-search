@@ -86,6 +86,24 @@
         </div>
       </section>
 
+      <section id="quote-panel" class="quote-panel" hidden aria-labelledby="quote-title">
+        <div class="quote-header">
+          <h2 id="quote-title">Список запчастин</h2>
+          <div class="sort-segment" role="group" aria-label="Вигляд списку">
+            <button type="button" class="sort-option quote-tab" data-view="mine">Для мене</button>
+            <button type="button" class="sort-option quote-tab" data-view="client">Для клієнта</button>
+          </div>
+          <label class="quote-markup">
+            Націнка %
+            <input id="quote-default-markup" type="number" step="1" inputmode="decimal" />
+          </label>
+          <button type="button" id="quote-apply-all" class="quote-button">Застосувати до всіх</button>
+          <button type="button" id="quote-clear" class="quote-button danger">Очистити</button>
+          <button type="button" id="quote-close" class="quote-button" aria-label="Закрити список">Згорнути</button>
+        </div>
+        <div id="quote-body"></div>
+      </section>
+
       <section id="provider-errors" class="provider-errors" hidden></section>
       <section id="results" class="results" aria-label="Search results"></section>
       <footer class="footer-info">
@@ -93,6 +111,7 @@
         <span id="search-stats" aria-label="Search statistics" hidden></span>
       </footer>
     </main>
+    <button type="button" id="quote-toggle" class="quote-toggle" aria-expanded="false" hidden>Список (0)</button>
 
     <template id="result-template">
       <article class="result-card">

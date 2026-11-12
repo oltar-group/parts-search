@@ -479,9 +479,12 @@ export function buildOptionAutoCatalogUrl(baseUrl, { article, brand }) {
   const brandSlug = String(brand || "")
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, "");
+  // The site answers 403 to %20 and 404 to %2F in the path, and finds the item
+  // by the compact article.
+  const articleSlug = String(article || "").replace(/[\s/\\]+/g, "");
 
-  if (brandSlug && article) {
-    return `${base}/catalog/item/${encodeURIComponent(brandSlug)}/${encodeURIComponent(article)}`;
+  if (brandSlug && articleSlug) {
+    return `${base}/catalog/item/${encodeURIComponent(brandSlug)}/${encodeURIComponent(articleSlug)}`;
   }
 
   const params = new URLSearchParams();

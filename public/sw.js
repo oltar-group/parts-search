@@ -3,12 +3,14 @@
 // navigations network-first (with cache fallback for offline), and
 // never cache API responses.
 
-const CACHE = "parts-search-v4";
+const CACHE = "parts-search-v6";
 const SHELL = [
   "/",
   "/index.html",
   "/styles.css",
   "/app.js",
+  "/quote.js",
+  "/quote-utils.js",
   "/manifest.webmanifest",
   "/icon.svg"
 ];
@@ -45,8 +47,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
+          // Do not cache the Access sign-in redirect as the app page.
+          if (response.ok && response.type === "basic") {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
+          }
           return response;
         })
         .catch(() => caches.match("/index.html"))

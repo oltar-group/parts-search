@@ -1,3 +1,5 @@
+import { createQuoteList } from "./quote.js";
+
 const form = document.querySelector("#search-form");
 const articleInput = document.querySelector("#article");
 const brandInput = document.querySelector("#brand");
@@ -12,11 +14,15 @@ const dialogClose = document.querySelector(".dialog-close");
 const buildInfo = document.querySelector("#build-info");
 const searchStats = document.querySelector("#search-stats");
 const sortControl = document.querySelector("#sort-control");
-const sortOptions = [...document.querySelectorAll(".sort-option")];
+const sortOptions = [...document.querySelectorAll(".sort-option[data-sort]")];
 const maxDeliveryDaysInput = document.querySelector("#max-delivery-days");
 let currentResults = [];
 let currentSort = "price-asc";
 let maxDeliveryDays = null;
+const quote = createQuoteList({
+  panel: document.querySelector("#quote-panel"),
+  toggleButton: document.querySelector("#quote-toggle")
+});
 
 dialogClose.addEventListener("click", () => imageDialog.close());
 imageDialog.addEventListener("click", (event) => {
@@ -27,6 +33,19 @@ imageDialog.addEventListener("click", (event) => {
 
 loadBuildInfo();
 loadSearchStats();
+
+// The page itself may come from the offline cache after the Cloudflare Access
+// sign-in has expired. API calls then get redirected to the Access login page,
+// which a background fetch cannot follow ("Failed to fetch"), so reload the
+// page to show the sign-in instead.
+async function apiFetch(url) {
+  const response = await fetch(url, { redirect: "manual" });
+  if (response.type === "opaqueredirect") {
+    window.location.reload();
+    throw new Error("Sign-in expired. Opening the sign-in page...");
+  }
+  return response;
+}
 
 sortOptions.forEach((option) => {
   option.addEventListener("click", () => {
@@ -67,7 +86,7 @@ form.addEventListener("submit", async (event) => {
       params.set("brand", brand);
     }
 
-    const response = await fetch(`/api/parts/search?${params}`);
+    const response = await apiFetch(`/api/parts/search?${params}`);
     const payload = await response.json();
     if (!response.ok) {
       const message = payload?.errors?.[0]?.message || "Search failed.";
@@ -106,7 +125,7 @@ async function loadBuildInfo() {
   }
 
   try {
-    const response = await fetch("/api/health");
+    const response = await apiFetch("/api/health");
     const payload = await response.json();
     const version = payload?.build?.version;
     const commit = payload?.build?.commit;
@@ -128,7 +147,7 @@ async function loadSearchStats() {
   }
 
   try {
-    const response = await fetch("/api/search-stats");
+    const response = await apiFetch("/api/search-stats");
     if (!response.ok) {
       searchStats.hidden = true;
       return;
@@ -407,6 +426,18 @@ function renderResultCard(result) {
     providerLink.textContent = "Open in provider";
     actions.append(providerLink);
   }
+  const displayValue = priceToNumber(displayPrice);
+  if (Number.isFinite(displayValue) && displayValue > 0) {
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "add-to-quote";
+    addButton.textContent = "+ До списку";
+    addButton.title = "Додати за ціною картки";
+    addButton.addEventListener("click", () =>
+      addToQuote(addButton, quoteItem(result, displayValue, cheapestRemainFor(result, displayValue)))
+    );
+    actions.append(addButton);
+  }
   if (result.apiDetailUrl) {
     const detail = document.createElement("span");
     detail.className = "detail-hint";
@@ -417,7 +448,7 @@ function renderResultCard(result) {
     node.querySelector(".result-body").append(actions);
   }
 
-  const stockBlock = renderRemains(result.remains);
+  const stockBlock = renderRemains(result.remains, result);
   if (stockBlock) {
     node.querySelector(".result-body").append(stockBlock);
   }
@@ -462,7 +493,7 @@ function valueOrDash(value) {
   return value === undefined || value === null || value === "" ? "-" : String(value);
 }
 
-function renderRemains(remains) {
+function renderRemains(remains, result) {
   const rows = normalizeRemains(remains);
   if (!rows.length) {
     return renderEmptyRemains(remains);
@@ -484,7 +515,7 @@ function renderRemains(remains) {
   list.className = "stock-list";
 
   for (const row of rows.slice(0, visibleLimit)) {
-    list.append(renderRemainRow(row));
+    list.append(renderRemainRow(row, result));
   }
 
   section.append(header, list);
@@ -499,7 +530,7 @@ function renderRemains(remains) {
       toggle.setAttribute("aria-expanded", String(!expanded));
       toggle.textContent = expanded ? `Show all ${rows.length}` : "Hide offers";
       list.replaceChildren(
-        ...(!expanded ? rows : rows.slice(0, visibleLimit)).map(renderRemainRow)
+        ...(!expanded ? rows : rows.slice(0, visibleLimit)).map((row) => renderRemainRow(row, result))
       );
     });
     toggle.setAttribute("aria-expanded", "false");
@@ -509,19 +540,58 @@ function renderRemains(remains) {
   return section;
 }
 
-function renderRemainRow(row) {
-    const item = document.createElement("li");
-    const storage = document.createElement("span");
-    const remain = document.createElement("strong");
-    const meta = document.createElement("small");
-    storage.textContent = row.storage || "Warehouse";
-    remain.textContent = valueOrDash(row.remain);
-    meta.textContent = row.meta || "";
-    item.append(storage, remain);
-    if (row.meta) {
-      item.append(meta);
-    }
-    return item;
+function renderRemainRow(row, result) {
+  const item = document.createElement("li");
+  const storage = document.createElement("span");
+  const remain = document.createElement("strong");
+  const meta = document.createElement("small");
+  storage.textContent = row.storage || "Warehouse";
+  remain.textContent = valueOrDash(row.remain);
+  meta.textContent = row.meta || "";
+  item.append(storage, remain);
+  if (row.meta) {
+    item.append(meta);
+  }
+  const price = getRemainPrice(row.entry);
+  if (result && price !== null && price > 0) {
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "add-to-quote small";
+    addButton.textContent = "+ До списку";
+    addButton.title = "Додати пропозицію цього складу";
+    addButton.addEventListener("click", () =>
+      addToQuote(addButton, quoteItem(result, price, row.entry))
+    );
+    item.append(addButton);
+  }
+  return item;
+}
+
+function cheapestRemainFor(result, price) {
+  const remains = Array.isArray(result?.remains) ? result.remains : [];
+  return remains.find((remain) => getRemainPrice(remain) === price) || null;
+}
+
+function quoteItem(result, price, remain) {
+  const days = getRemainDeliveryDays(remain);
+  return {
+    title: result.title || "",
+    brand: result.displayBrand || result.brand || "",
+    article: result.article || "",
+    provider: result.providerName || result.providerId || "",
+    providerUrl: getProviderActionUrl(result),
+    warehouse: remain ? normalizeRemains([remain])[0]?.storage || "" : "",
+    deliveryDays: days,
+    price
+  };
+}
+
+function addToQuote(button, item) {
+  quote.add(item);
+  button.textContent = "✓ Додано";
+  setTimeout(() => {
+    button.textContent = "+ До списку";
+  }, 1200);
 }
 
 function renderEmptyRemains(remains) {
@@ -582,7 +652,8 @@ function normalizeRemains(remains) {
           entry?.stock ??
           entry?.Stock ??
           "",
-        meta: formatRemainMeta(entry)
+        meta: formatRemainMeta(entry),
+        entry
       }))
       .filter((entry) => entry.storage || entry.remain !== "");
   }

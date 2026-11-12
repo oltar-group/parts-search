@@ -434,7 +434,11 @@ export function normalizeAutonovaItem(item, index, provider = DEFAULT_PROVIDER) 
       "SaleQnt"
     ]),
     rawUrl: "",
-    providerUrl: buildAutonovaSearchUrl(provider.webBaseUrl, { article }),
+    providerUrl: buildAutonovaSearchUrl(provider.webBaseUrl, {
+      article,
+      // Items without offers are often missing from the site's catalogue.
+      producerId: remains?.length ? pickValue(item, ["producerId", "ProducerId"]) : ""
+    }),
     apiDetailUrl: "",
     raw: redactSensitive(item)
   };
@@ -458,11 +462,19 @@ function mergeAutonovaResults(base, details) {
   };
 }
 
-export function buildAutonovaSearchUrl(baseUrl, { article }) {
+export function buildAutonovaSearchUrl(baseUrl, { article, producerId }) {
+  const base = trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl);
   const params = new URLSearchParams();
-  params.set("query", article || "");
 
-  return `${trimTrailingSlash(baseUrl || DEFAULT_PROVIDER.webBaseUrl)}/ru/search-products/?${params}`;
+  // The site identifies a product as <article without separators>_<producer id>.
+  const compactArticle = String(article || "").replace(/[^\p{L}\p{N}]+/gu, "");
+  if (compactArticle && producerId) {
+    params.set("query", `${compactArticle}_${producerId}`);
+    return `${base}/search/?${params}`;
+  }
+
+  params.set("query", article || "");
+  return `${base}/search-products/?${params}`;
 }
 
 function normalizeRemains(item) {

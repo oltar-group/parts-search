@@ -1,0 +1,29 @@
+# Cloudflare Workers deployment. Steps: docs/deploy-cloudflare.md
+name = "parts-search"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Oltar Cloudflare account, so a deploy under another login fails instead of
+# landing in the wrong account.
+account_id = "f7f946cc875b0294615f3925b1dbce27"
+
+# Reached only through the Access-protected workers.dev address.
+workers_dev = true
+preview_urls = false
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+# Both come from Cloudflare Zero Trust. While empty, the Worker refuses every request.
+ACCESS_TEAM_DOMAIN = "cold-limit-aeeb.cloudflareaccess.com"
+ACCESS_AUD = "3f5ae7c8cf8e78cc5637859c2295e47d9a56b3dfab38108f498dcf68817d338d"
+
+# Optional search counters: run `npx wrangler kv namespace create STATS`,
+# then uncomment and paste the id.
+# [[kv_namespaces]]
+# binding = "STATS"
+# id = ""

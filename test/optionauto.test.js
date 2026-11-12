@@ -237,6 +237,23 @@ test("builds OptionAuto item URL when brand is known", () => {
   );
 });
 
+test("removes spaces and slashes from the article in OptionAuto item URL", () => {
+  assert.equal(
+    buildOptionAutoCatalogUrl("https://www.optionauto.com.ua", {
+      article: "0 986 494 947",
+      brand: "Bosch"
+    }),
+    "https://www.optionauto.com.ua/catalog/item/BOSCH/0986494947"
+  );
+  assert.equal(
+    buildOptionAutoCatalogUrl("https://www.optionauto.com.ua", {
+      article: "W712/75",
+      brand: "Mann"
+    }),
+    "https://www.optionauto.com.ua/catalog/item/MANN/W71275"
+  );
+});
+
 test("registers OptionAuto provider only when API key and client id are configured", () => {
   const withoutOptionAuto = createProviders(
     readConfig({

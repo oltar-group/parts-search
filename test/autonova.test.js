@@ -66,7 +66,7 @@ test("Autonova provider authenticates and searches article details", async () =>
   assert.equal(results[0].brand, "MAHLE");
   assert.equal(
     results[0].providerUrl,
-    "https://autonovad.ua/ru/search-products/?query=OC90"
+    "https://autonovad.ua/search-products/?query=OC90"
   );
   assert.deepEqual(results[0].price, { value: 92.5, currency: "UAH" });
   assert.deepEqual(results[0].remains, [
@@ -286,7 +286,14 @@ test("normalizes documented Autonova OpenAPI response shapes", () => {
 test("builds Autonova provider search URL", () => {
   assert.equal(
     buildAutonovaSearchUrl("https://autonovad.ua", { article: "038198119A" }),
-    "https://autonovad.ua/ru/search-products/?query=038198119A"
+    "https://autonovad.ua/search-products/?query=038198119A"
+  );
+  assert.equal(
+    buildAutonovaSearchUrl("https://autonovad.ua", {
+      article: "0 986-494.947",
+      producerId: 51
+    }),
+    "https://autonovad.ua/search/?query=0986494947_51"
   );
 });
 
