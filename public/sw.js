@@ -3,7 +3,7 @@
 // navigations network-first (with cache fallback for offline), and
 // never cache API responses.
 
-const CACHE = "parts-search-v6";
+const CACHE = "parts-search-v7";
 const SHELL = [
   "/",
   "/index.html",

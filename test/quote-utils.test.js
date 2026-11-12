@@ -27,13 +27,13 @@ test("strips the article from the part name", () => {
 
 test("totals and client text", () => {
   const items = [
-    { title: "Олива 184251", article: "184251", price: 984, markup: 20, qty: 2 },
+    { title: "Олива 184251", brand: "Febi", article: "184251", price: 984, markup: 20, qty: 2 },
     { title: "Фільтр", clientName: "Фільтр масляний", article: "X", price: 100, markup: 23 }
   ];
   assert.deepEqual(quoteTotals(items), { purchase: 2068, client: 2510, profit: 442 });
   const text = clientListText(items, (value) => `${value} грн`);
   assert.equal(
     text,
-    "1. Олива — 2 шт × 1190 грн = 2380 грн\n2. Фільтр масляний — 130 грн\n\nРазом: 2510 грн"
+    "1. Олива (Febi) — 2 шт × 1190 грн = 2380 грн\n2. Фільтр масляний — 130 грн\n\nРазом: 2510 грн"
   );
 });

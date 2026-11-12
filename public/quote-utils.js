@@ -54,11 +54,20 @@ export function clientListText(items, formatMoney) {
   const lines = items.map((item, index) => {
     const qty = positiveQty(item.qty);
     const unit = clientUnitPrice(item.price, item.markup);
-    const name = item.clientName || stripArticle(item.title, item.article) || "Запчастина";
+    const brand = clientBrand(item);
+    const name = `${clientName(item)}${brand ? ` (${brand})` : ""}`;
     return qty > 1
       ? `${index + 1}. ${name} — ${qty} шт × ${formatMoney(unit)} = ${formatMoney(unit * qty)}`
       : `${index + 1}. ${name} — ${formatMoney(unit)}`;
   });
   lines.push("", `Разом: ${formatMoney(quoteTotals(items).client)}`);
   return lines.join("\n");
+}
+
+export function clientName(item) {
+  return item.clientName || stripArticle(item.title, item.article) || "Запчастина";
+}
+
+export function clientBrand(item) {
+  return String(item.clientBrand ?? item.brand ?? "").trim();
 }

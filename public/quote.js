@@ -1,7 +1,9 @@
 // Quote list: parts picked from search results, a markup per line, and a
 // client version without part numbers or suppliers. Kept in this browser only.
 import {
+  clientBrand,
   clientListText,
+  clientName,
   clientUnitPrice,
   positiveQty,
   quoteTotals,
@@ -106,6 +108,13 @@ export function createQuoteList({ panel, toggleButton }) {
         item.clientName = nameInput.value;
         save();
       });
+      const brandInput = input("text", clientBrand(item), "Виробник для клієнта");
+      brandInput.className = "quote-brand";
+      brandInput.placeholder = "Виробник";
+      brandInput.addEventListener("input", () => {
+        item.clientBrand = brandInput.value;
+        save();
+      });
       const source = el("div", "quote-source");
       const sourceText = [
         [item.brand, item.article].filter(Boolean).join(" "),
@@ -124,7 +133,7 @@ export function createQuoteList({ panel, toggleButton }) {
       } else {
         source.textContent = sourceText;
       }
-      nameCell.append(nameInput, source);
+      nameCell.append(el("div", "quote-name-row", [nameInput, brandInput]), source);
 
       const qtyInput = input("number", item.qty, "Кількість");
       qtyInput.min = "1";
@@ -190,17 +199,29 @@ export function createQuoteList({ panel, toggleButton }) {
 
   function renderClient() {
     const wrap = el("div", "quote-client");
-    const list = el("ol", "quote-client-list");
-    for (const item of state.items) {
+    const table = el("table", "quote-table quote-client-table");
+    const head = el("tr");
+    ["№", "Назва", "Виробник", "К-сть", "Ціна", "Сума"].forEach((text, index) =>
+      head.append(el("th", index >= 3 ? "num" : "", text))
+    );
+    table.append(el("thead", "", head));
+    const tbody = el("tbody");
+    state.items.forEach((item, index) => {
       const qty = positiveQty(item.qty);
       const unit = clientUnitPrice(item.price, item.markup);
-      const li = el("li");
-      li.append(
-        el("span", "", item.clientName || stripArticle(item.title, item.article) || "Запчастина"),
-        el("strong", "", qty > 1 ? `${qty} шт × ${money(unit)} = ${money(unit * qty)}` : money(unit))
+      const row = el("tr");
+      row.append(
+        el("td", "", index + 1),
+        el("td", "", clientName(item)),
+        el("td", "", clientBrand(item) || "—"),
+        el("td", "num", qty),
+        el("td", "num", money(unit)),
+        el("td", "num strong", money(unit * qty))
       );
-      list.append(li);
-    }
+      tbody.append(row);
+    });
+    table.append(tbody);
+    const list = el("div", "quote-scroll", table);
     const total = el("p", "quote-client-total", `Разом: ${money(quoteTotals(state.items).client)}`);
 
     const actions = el("div", "quote-actions");
@@ -242,7 +263,7 @@ export function createQuoteList({ panel, toggleButton }) {
     h1.textContent = `Список запчастин від ${new Date().toLocaleDateString("uk-UA")}`;
     const table = doc.createElement("table");
     table.innerHTML =
-      "<thead><tr><th>№</th><th>Назва</th><th class=num>К-сть</th><th class=num>Ціна</th><th class=num>Сума</th></tr></thead>";
+      "<thead><tr><th>№</th><th>Назва</th><th>Виробник</th><th class=num>К-сть</th><th class=num>Ціна</th><th class=num>Сума</th></tr></thead>";
     const tbody = doc.createElement("tbody");
     state.items.forEach((item, index) => {
       const qty = positiveQty(item.qty);
@@ -250,14 +271,15 @@ export function createQuoteList({ panel, toggleButton }) {
       const tr = doc.createElement("tr");
       [
         String(index + 1),
-        item.clientName || stripArticle(item.title, item.article) || "Запчастина",
+        clientName(item),
+        clientBrand(item) || "—",
         String(qty),
         money(unit),
         money(unit * qty)
       ].forEach((text, cellIndex) => {
         const td = doc.createElement("td");
         td.textContent = text;
-        if (cellIndex >= 2) td.className = "num";
+        if (cellIndex >= 3) td.className = "num";
         tr.append(td);
       });
       tbody.append(tr);
@@ -265,7 +287,7 @@ export function createQuoteList({ panel, toggleButton }) {
     const tfoot = doc.createElement("tfoot");
     const footRow = doc.createElement("tr");
     const label = doc.createElement("td");
-    label.colSpan = 4;
+    label.colSpan = 5;
     label.textContent = "Разом";
     const sum = doc.createElement("td");
     sum.className = "num";
@@ -315,7 +337,8 @@ function money(value) {
 function el(tag, className = "", content) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (content instanceof Node) node.append(content);
+  if (Array.isArray(content)) node.append(...content);
+  else if (content instanceof Node) node.append(content);
   else if (content !== undefined) node.textContent = String(content);
   return node;
 }

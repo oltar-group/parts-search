@@ -666,6 +666,29 @@ dd {
   width: 100%;
 }
 
+.quote-name-row {
+  display: flex;
+  gap: 8px;
+}
+
+.quote-table .quote-name-row .quote-brand {
+  width: 140px;
+  flex: none;
+}
+
+.quote-client-table td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.quote-client-table .num {
+  padding-top: 10px;
+}
+
+.quote-client-table th.num {
+  text-align: right;
+}
+
 .quote-source {
   margin-top: 4px;
   color: var(--muted);
