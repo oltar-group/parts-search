@@ -8,7 +8,7 @@ import {
   positiveQty,
   quoteTotals,
   stripArticle
-} from "./quote-utils.js";
+} from "./quote-utils.js?v=9";
 
 const STORAGE_KEY = "parts-search-quote-v1";
 

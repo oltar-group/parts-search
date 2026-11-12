@@ -1,4 +1,4 @@
-import { createQuoteList } from "./quote.js";
+import { createQuoteList } from "./quote.js?v=9";
 
 const form = document.querySelector("#search-form");
 const articleInput = document.querySelector("#article");

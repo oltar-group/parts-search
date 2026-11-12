@@ -3,14 +3,14 @@
 // network-first (cache only as an offline fallback, so a new version shows
 // up on the next reload), and never cache API responses.
 
-const CACHE = "parts-search-v8";
+const CACHE = "parts-search-v9";
 const SHELL = [
   "/",
   "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/quote.js",
-  "/quote-utils.js",
+  "/styles.css?v=9",
+  "/app.js?v=9",
+  "/quote.js?v=9",
+  "/quote-utils.js?v=9",
   "/manifest.webmanifest",
   "/icon.svg"
 ];
