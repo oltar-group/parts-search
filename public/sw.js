@@ -1,9 +1,9 @@
 // Service worker for the Parts Search PWA.
-// Strategy: precache the app shell, serve static assets cache-first,
-// navigations network-first (with cache fallback for offline), and
-// never cache API responses.
+// Strategy: precache the app shell, serve the page and static assets
+// network-first (cache only as an offline fallback, so a new version shows
+// up on the next reload), and never cache API responses.
 
-const CACHE = "parts-search-v7";
+const CACHE = "parts-search-v8";
 const SHELL = [
   "/",
   "/index.html",
@@ -17,7 +17,9 @@ const SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(SHELL.map((path) => new Request(path, { cache: "reload" })))).then(() => self.skipWaiting())
   );
 });
 
@@ -60,16 +62,14 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-    )
+    fetch(request)
+      .then((response) => {
+        if (response.ok && response.type === "basic") {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });
